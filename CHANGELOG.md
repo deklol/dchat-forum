@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.2
+- Added lightweight live inbox badge updates so new DMs and inbox notifications appear without a full page refresh.
+- Invalidated unread-count caches on DM send, DM read, mention read, and notification read for consistent header state.
+- Added an Inbox Settings shortcut on the owner profile page.
+- Linked the footer `dChat` brand text to the public GitHub repository through the outbound-link gate.
+- Added per-conversation DM icons to the guild rail with a context menu action to hide chats from the rail.
+- Brought DMs closer to thread capability parity with markdown/link embeds and multiple image uploads up to the normal 8 MB per-file limit.
+
 ## v1.1
 - Replaced vote-derived “rep” with a real reputation system backed by explicit `+Rep` grants and moderator warning penalties.
 - Added `+Rep` actions to thread starters and replies, with one grant per user per piece of content.

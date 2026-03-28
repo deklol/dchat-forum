@@ -16,6 +16,7 @@ from django.utils import timezone
 from django.views.decorators.http import require_GET, require_POST
 from django.views.generic import DetailView, ListView, TemplateView
 
+from apps.core.context_processors import invalidate_notification_count
 from apps.core.ratelimit import rate_limit
 from apps.forum.forms import PostForm, ThreadForm
 from apps.forum.models import (
@@ -275,12 +276,14 @@ class ThreadDetailView(DetailView):
         context = super().get_context_data(**kwargs)
         context["canonical_url"] = self.request.build_absolute_uri(self.object.get_absolute_url())
         if self.request.user.is_authenticated:
-            Notification.objects.filter(
+            marked_read = Notification.objects.filter(
                 recipient=self.request.user,
                 kind="mention",
                 thread=self.object,
                 is_read=False,
             ).update(is_read=True)
+            if marked_read:
+                invalidate_notification_count(self.request.user.id)
         lead_image_post = get_thread_lead_image_post(self.object)
         posts = (
             self.object.posts.select_related("author", "parent", "parent__author")
@@ -404,6 +407,7 @@ def thread_create(request: HttpRequest) -> HttpResponse:
                         for user in mentioned_users
                     ]
                 )
+                invalidate_notification_count(*(user.id for user in mentioned_users))
             messages.success(request, "Thread created.")
             return redirect(thread)
     else:
@@ -445,6 +449,7 @@ def post_reply(request: HttpRequest, thread_id: int) -> HttpResponse:
 
         mentioned_usernames = extract_mentions(post.body_markdown)
         mentioned_ids: list[int] = []
+        notification_recipient_ids: set[int] = set()
         if mentioned_usernames:
             mentioned_users = list(User.objects.filter(username__in=mentioned_usernames))
             mentioned_ids = [u.id for u in mentioned_users if u.id != request.user.id]
@@ -466,6 +471,7 @@ def post_reply(request: HttpRequest, thread_id: int) -> HttpResponse:
                     if user.id != request.user.id
                 ]
             )
+            notification_recipient_ids.update(mentioned_ids)
 
         notified_reply_targets = {request.user.id, *mentioned_ids}
         if post.parent_id and post.parent and post.parent.author_id not in notified_reply_targets:
@@ -478,6 +484,7 @@ def post_reply(request: HttpRequest, thread_id: int) -> HttpResponse:
                 body=f"{request.user.username} replied to your post",
             )
             notified_reply_targets.add(post.parent.author_id)
+            notification_recipient_ids.add(post.parent.author_id)
 
         if thread.author_id not in notified_reply_targets:
             Notification.objects.create(
@@ -488,9 +495,11 @@ def post_reply(request: HttpRequest, thread_id: int) -> HttpResponse:
                 post=post,
                 body=f"{request.user.username} replied to your thread",
             )
+            notification_recipient_ids.add(thread.author_id)
 
         thread.updated_at = timezone.now()
         thread.save(update_fields=["updated_at"])
+        invalidate_notification_count(*notification_recipient_ids)
         messages.success(request, "Reply posted.")
     else:
         messages.error(request, "Could not post reply. Please review the form.")
@@ -651,6 +660,7 @@ def warn_user(request: HttpRequest) -> HttpResponse:
         post=warning.post,
         body=f"You were warned by a moderator and lost {warning.rep_penalty} rep.",
     )
+    invalidate_notification_count(warned_user.id)
     ModerationLog.objects.create(
         actor=request.user,
         action="warn_user",

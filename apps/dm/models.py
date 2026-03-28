@@ -87,3 +87,21 @@ class DirectMessage(models.Model):
 
     def __str__(self) -> str:
         return f"DM {self.id} in {self.conversation_id}"
+
+
+class DirectMessageAttachment(models.Model):
+    message = models.ForeignKey(DirectMessage, on_delete=models.CASCADE, related_name="attachments")
+    file = models.FileField(upload_to="dm-attachments/%Y/%m/")
+    original_name = models.CharField(max_length=255)
+    mime_type = models.CharField(max_length=120)
+    size_bytes = models.PositiveIntegerField()
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["uploaded_at"]
+        indexes = [
+            models.Index(fields=["message", "uploaded_at"], name="dm_attach_message_idx"),
+        ]
+
+    def __str__(self) -> str:
+        return self.original_name

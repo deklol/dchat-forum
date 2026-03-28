@@ -2,7 +2,10 @@ from django.contrib.auth import get_user_model
 from django.test import TestCase, override_settings
 from django.urls import reverse
 
-from apps.forum.models import Category, Post, ReputationGrant, Thread
+from apps.core.context_processors import invalidate_notification_count
+from apps.dm.context_processors import invalidate_dm_context
+from apps.dm.models import DirectConversation, DirectMessage
+from apps.forum.models import Category, Notification, Post, ReputationGrant, Thread
 
 User = get_user_model()
 
@@ -50,3 +53,33 @@ class AuthFlowTests(TestCase):
         self.assertContains(response, "Recent Topics")
         self.assertContains(response, "Recent Replies")
         self.assertContains(response, "Recent topic")
+
+    def test_shell_state_returns_live_inbox_counts(self):
+        owner = User.objects.create_user(username="owner", email="owner@example.com", password="StrongPass123!")
+        sender = User.objects.create_user(username="sender", email="sender@example.com", password="StrongPass123!")
+        conversation = DirectConversation.for_users(owner, sender)
+        direct_message = DirectMessage.objects.create(conversation=conversation, sender=sender, recipient=owner)
+        direct_message.set_body("ping")
+        direct_message.save(update_fields=["body_encrypted"])
+        Notification.objects.create(
+            recipient=owner,
+            actor=sender,
+            kind="mention",
+            body="sender mentioned you",
+        )
+        invalidate_dm_context(owner.id)
+        invalidate_notification_count(owner.id)
+
+        self.client.login(username="owner", password="StrongPass123!")
+        response = self.client.get(reverse("accounts:shell_state"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertJSONEqual(
+            response.content,
+            {
+                "unread_dm_count": 1,
+                "unread_notifications_count": 1,
+                "inbox_total": 2,
+                "has_dm_access": True,
+            },
+        )

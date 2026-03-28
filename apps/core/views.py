@@ -11,6 +11,8 @@ from django.views.generic import FormView, TemplateView
 from django.conf import settings
 from pathlib import Path
 from django.db import connection
+from django.db.models import FloatField
+from django.db.models.functions import Cast
 from django.core.cache import cache
 
 from apps.core.forms import FirstRunSetupForm
@@ -89,7 +91,10 @@ class ChangelogView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["entries"] = ChangeLogEntry.objects.all()
+        context["entries"] = ChangeLogEntry.objects.annotate(version_number=Cast("version", FloatField())).order_by(
+            "-version_number",
+            "-released_at",
+        )
         return context
 
 

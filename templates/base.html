@@ -14,6 +14,7 @@
 </head>
 <body
   class="{% if branding %}theme-{{ branding.theme_preset }}{% else %}theme-default{% endif %}"
+  data-shell-state-url="{% if user.is_authenticated %}{% url 'accounts:shell_state' %}{% endif %}"
   style="
     --accent:{% if branding %}{{ branding.accent_hex }}{% else %}#f39c12{% endif %};
     --bg:{% if branding %}{{ branding.bg_hex }}{% else %}#0f1217{% endif %};
@@ -30,6 +31,21 @@
       <a href="{% url 'forum:home' %}" class="guild-pill guild-pill-home" aria-label="Forum home" title="Home">
         {% if branding %}{{ branding.site_name|slice:":1"|upper }}{% else %}D{% endif %}
       </a>
+      {% if user.is_authenticated %}
+        {% if guild_dm_users %}
+          {% for guild_dm_user in guild_dm_users %}
+            <a href="{% url 'dm:inbox' %}?u={{ guild_dm_user.username }}" class="guild-pill guild-pill-dm" data-guild-dm-pill data-guild-dm-key="{{ guild_dm_user.username }}" aria-label="Direct messages with {{ guild_dm_user.username }}" title="@{{ guild_dm_user.username }}">
+              {% if guild_dm_user.avatar_url %}
+                <img src="{{ guild_dm_user.avatar_url }}" alt="{{ guild_dm_user.username }}" class="guild-pill-avatar" width="44" height="44">
+              {% else %}
+                <span class="guild-pill-fallback" aria-hidden="true">{{ guild_dm_user.initial }}</span>
+              {% endif %}
+            </a>
+          {% endfor %}
+        {% else %}
+          <a href="{% url 'dm:inbox' %}" class="guild-pill guild-pill-inbox" aria-label="Inbox and direct messages" title="Inbox">I</a>
+        {% endif %}
+      {% endif %}
       {% if user.is_authenticated and perms.forum.add_thread %}
         <a href="{% url 'forum:thread_create' %}" class="guild-pill guild-pill-action" aria-label="Create thread" title="Create thread">+</a>
       {% endif %}
@@ -57,6 +73,11 @@
       </main>
     </div>
   </div>
+  {% if user.is_authenticated %}
+    <div class="shell-context-menu" id="shell-context-menu" hidden>
+      <button type="button" data-shell-menu-action></button>
+    </div>
+  {% endif %}
   <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
 
   {% if not request.COOKIES.cookie_consent %}

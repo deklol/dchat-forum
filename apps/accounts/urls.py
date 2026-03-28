@@ -12,6 +12,7 @@ from apps.accounts.views import (
     export_personal_data,
     mention_candidates,
     mark_notification_read,
+    shell_state,
     user_card_partial,
 )
 
@@ -24,6 +25,7 @@ urlpatterns = [
     path("profile/edit/", ProfileEditView.as_view(), name="profile_edit"),
     path("notifications/", NotificationsView.as_view(), name="notifications"),
     path("notifications/<int:notification_id>/read/", mark_notification_read, name="notification_read"),
+    path("shell-state/", shell_state, name="shell_state"),
     path("mentions/", mention_candidates, name="mentions"),
     path("privacy/export/", export_personal_data, name="privacy_export"),
     path("privacy/delete/", DeleteAccountView.as_view(), name="privacy_delete"),

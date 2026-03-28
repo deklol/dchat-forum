@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load forum_format %}
 {% block content %}
 <section class="page-shell">
   <header class="page-head">
@@ -17,7 +18,23 @@
             {% if message.reported_by %}<span>reported by {{ message.reported_by.username }}</span>{% endif %}
           </p>
           {% if message.report_reason %}<p class="topic-preview">{{ message.report_reason }}</p>{% endif %}
-          <div class="markdown-body">{{ message.body_plain|linebreaksbr }}</div>
+          {% if message.body_plain %}
+            <div class="markdown-body">{{ message.body_plain|render_markdown_plain }}</div>
+          {% endif %}
+          {% if message.attachments.all %}
+            <div class="attachment-preview-list">
+              {% for attachment in message.attachments.all %}
+                <figure class="attachment-preview">
+                  <a href="{{ attachment.file.url }}" target="_blank" rel="noopener">
+                    <img src="{{ attachment.file.url }}" alt="{{ attachment.original_name }}" loading="lazy">
+                  </a>
+                  <figcaption>
+                    <a href="{{ attachment.file.url }}" target="_blank" rel="noopener">{{ attachment.original_name }}</a>
+                  </figcaption>
+                </figure>
+              {% endfor %}
+            </div>
+          {% endif %}
         </div>
       </article>
     {% empty %}

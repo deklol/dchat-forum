@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load forum_format %}
 {% block content %}
 <section class="page-shell">
   <header class="page-head">
@@ -15,7 +16,23 @@
             <span>{{ message.created_at|date:"M j, Y H:i" }}</span>
             {% if message.is_reported %}<span class="badge">Reported</span>{% endif %}
           </p>
-          <div class="markdown-body">{{ message.body_plain|linebreaksbr }}</div>
+          {% if message.body_plain %}
+            <div class="markdown-body">{{ message.body_plain|render_markdown_plain }}</div>
+          {% endif %}
+          {% if message.attachments.all %}
+            <div class="attachment-preview-list">
+              {% for attachment in message.attachments.all %}
+                <figure class="attachment-preview">
+                  <a href="{{ attachment.file.url }}" target="_blank" rel="noopener">
+                    <img src="{{ attachment.file.url }}" alt="{{ attachment.original_name }}" loading="lazy">
+                  </a>
+                  <figcaption>
+                    <a href="{{ attachment.file.url }}" target="_blank" rel="noopener">{{ attachment.original_name }}</a>
+                  </figcaption>
+                </figure>
+              {% endfor %}
+            </div>
+          {% endif %}
         </div>
         <div class="topic-stats dm-actions">
           {% if message.sender_id != user.id and not message.is_reported %}
@@ -33,13 +50,18 @@
   </section>
   <section class="composer-shell dm-composer">
     {% if target_accepts_dms %}
-      <form method="post" class="form-grid">
+      <form method="post" class="form-grid" enctype="multipart/form-data">
         {% csrf_token %}
         {{ form.non_field_errors }}
         <p>
           {{ form.body.label_tag }}
           {{ form.body }}
           {{ form.body.errors }}
+        </p>
+        <p>
+          {{ form.attachments.label_tag }}
+          {{ form.attachments }}
+          {{ form.attachments.errors }}
         </p>
         <div class="composer-actions">
           <p class="muted">DM bodies are stored encrypted and delivered over HTTPS.</p>

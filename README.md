@@ -2,7 +2,11 @@
 
 Open source Discord/forum hybrid with public read access and member-only interaction.
 
-Current release baseline: `v1.1`
+Current release baseline: `v1.2`
+
+Live example:
+
+- `https://forum.dek.cx/`
 
 ## What dChat ships with
 
@@ -12,7 +16,7 @@ Current release baseline: `v1.1`
 - Optional email verification, disabled by default
 - Discord-inspired, forum-structured UI with real-time thread updates
 - Nested replies, post permalinks, `@mentions`, and inbox notifications
-- Direct messages, moderation queue, reports, soft delete, restore, and action logs
+- Direct messages with markdown/link embeds, image uploads, moderation queue, reports, soft delete, restore, and action logs
 - Theme branding controls, including full color customization and the optional `dekcx` preset
 - First-run setup wizard
 - GDPR export/delete flows
@@ -33,6 +37,11 @@ Optional full profile:
 - Caddy for reverse proxy and TLS termination
 
 There is no required worker process in the default release.
+
+Tracked source footprint:
+
+- `120` tracked files
+- about `0.39 MB` before dependencies, media, and generated static output
 
 ## Quick start
 

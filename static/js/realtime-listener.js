@@ -2,11 +2,14 @@ let threadEventSource = null;
 let presenceEventSource = null;
 let threadPollingTimer = null;
 let presencePollingTimer = null;
+let shellStateTimer = null;
+let shellStateRequestInFlight = false;
 let mentionLookupTimer = null;
 let mentionAbortController = null;
 let threadReconnectTimer = null;
 let presenceReconnectTimer = null;
 let cachedMentionUsers = null;
+const guildDmHiddenStorageKey = "dchat.hiddenGuildDmUsers";
 
 const mentionState = {
   textarea: null,
@@ -484,6 +487,132 @@ function attachBackButtonHandlers() {
   });
 }
 
+function hiddenGuildDmKeys() {
+  try {
+    const parsed = JSON.parse(window.localStorage.getItem(guildDmHiddenStorageKey) || "[]");
+    return Array.isArray(parsed) ? parsed.filter((value) => typeof value === "string" && value) : [];
+  } catch {
+    return [];
+  }
+}
+
+function writeHiddenGuildDmKeys(keys) {
+  window.localStorage.setItem(guildDmHiddenStorageKey, JSON.stringify(Array.from(new Set(keys))));
+}
+
+function applyGuildDmVisibility() {
+  const hiddenKeys = new Set(hiddenGuildDmKeys());
+  document.querySelectorAll("[data-guild-dm-pill]").forEach((node) => {
+    node.hidden = hiddenKeys.has(node.getAttribute("data-guild-dm-key") || "");
+  });
+}
+
+function attachGuildDmVisibilityHandlers() {
+  const contextMenu = document.getElementById("shell-context-menu");
+  const actionButton = contextMenu?.querySelector("[data-shell-menu-action]") || null;
+
+  const hideContextMenu = () => {
+    if (contextMenu) contextMenu.hidden = true;
+    if (actionButton instanceof HTMLButtonElement) {
+      actionButton.textContent = "";
+      actionButton.dataset.menuAction = "";
+      actionButton.dataset.guildDmKey = "";
+    }
+  };
+
+  const showContextMenu = (x, y, action, key = "") => {
+    if (!(contextMenu instanceof HTMLElement) || !(actionButton instanceof HTMLButtonElement)) return;
+    actionButton.dataset.menuAction = action;
+    actionButton.dataset.guildDmKey = key;
+    actionButton.textContent = action === "restore" ? "Show hidden chats" : "Hide chat from sidebar";
+    contextMenu.style.left = `${x}px`;
+    contextMenu.style.top = `${y}px`;
+    contextMenu.hidden = false;
+  };
+
+  applyGuildDmVisibility();
+  document.addEventListener("contextmenu", (event) => {
+    const target = event.target;
+    if (!(target instanceof HTMLElement)) return;
+
+    const guildDmPill = target.closest("[data-guild-dm-pill]");
+    if (guildDmPill instanceof HTMLAnchorElement) {
+      event.preventDefault();
+      showContextMenu(event.clientX, event.clientY, "hide", guildDmPill.dataset.guildDmKey || "");
+      return;
+    }
+
+    const inboxLink = target.closest("[data-inbox-link]");
+    if (inboxLink instanceof HTMLAnchorElement && hiddenGuildDmKeys().length) {
+      event.preventDefault();
+      showContextMenu(event.clientX, event.clientY, "restore");
+      return;
+    }
+
+    hideContextMenu();
+  });
+
+  document.addEventListener("click", (event) => {
+    const target = event.target;
+    if (target instanceof HTMLElement && target.closest("[data-shell-menu-action]") && actionButton instanceof HTMLButtonElement) {
+      const action = actionButton.dataset.menuAction;
+      const key = actionButton.dataset.guildDmKey;
+      if (action === "hide" && key) {
+        writeHiddenGuildDmKeys([...hiddenGuildDmKeys(), key]);
+        applyGuildDmVisibility();
+      }
+      if (action === "restore") {
+        window.localStorage.removeItem(guildDmHiddenStorageKey);
+        applyGuildDmVisibility();
+      }
+    }
+    hideContextMenu();
+  });
+
+  document.addEventListener("scroll", hideContextMenu, true);
+  window.addEventListener("resize", hideContextMenu);
+}
+
+function updateShellCounts(payload) {
+  if (!payload || typeof payload !== "object") return;
+  const inboxTotal = Number(payload.inbox_total || 0);
+  const unreadNotifications = Number(payload.unread_notifications_count || 0);
+
+  document.querySelectorAll("[data-inbox-count]").forEach((node) => {
+    node.textContent = inboxTotal > 0 ? ` (${inboxTotal})` : "";
+    node.hidden = inboxTotal <= 0;
+  });
+
+  document.querySelectorAll("[data-inbox-unread-chip]").forEach((node) => {
+    node.textContent = `${inboxTotal} unread`;
+    node.hidden = inboxTotal <= 0;
+  });
+
+  document.querySelectorAll("[data-notification-unread-badge]").forEach((node) => {
+    node.textContent = `${unreadNotifications} unread`;
+    node.hidden = unreadNotifications <= 0;
+  });
+}
+
+async function refreshShellState() {
+  const url = document.body?.dataset.shellStateUrl || "";
+  if (!url || shellStateRequestInFlight || document.hidden) return;
+  shellStateRequestInFlight = true;
+  try {
+    const payload = await fetchJson(url, { headers: { "X-Requested-With": "XMLHttpRequest" } });
+    if (payload) updateShellCounts(payload);
+  } finally {
+    shellStateRequestInFlight = false;
+  }
+}
+
+function startShellStatePolling() {
+  const url = document.body?.dataset.shellStateUrl || "";
+  if (!url || shellStateTimer) return;
+  refreshShellState();
+  shellStateTimer = window.setInterval(refreshShellState, 2500);
+}
+
 function startPollingFallback() {
   if (threadPollingTimer) return;
   refreshThreadReplies();
@@ -559,8 +688,10 @@ document.addEventListener("DOMContentLoaded", () => {
   attachComposerHandlers();
   attachPermalinkHandlers();
   attachBackButtonHandlers();
+  attachGuildDmVisibilityHandlers();
   initFooterLocalTime();
   hydrateEmbeds(document);
+  startShellStatePolling();
   const threadStreaming = initThreadStream();
   const presenceStreaming = initPresenceStream();
   if (!threadStreaming && document.getElementById("thread-posts-root")) startPollingFallback();

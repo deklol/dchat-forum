@@ -169,6 +169,18 @@ class FirstRunSetupForm(forms.Form):
                             "- Fixed long subthread titles in the topics sidebar with a stable two-line layout"
                         ),
                     ),
+                    ChangeLogEntry(
+                        version="1.2",
+                        title="Live inbox shell updates",
+                        body_markdown=(
+                            "- Added lightweight live inbox badge updates so new DMs and inbox notifications appear without a full page refresh\n"
+                            "- Invalidated unread-count caches on DM send/read and notification read paths for consistent shell state\n"
+                            "- Added an Inbox Settings shortcut on the owner profile page\n"
+                            "- Linked the footer `dChat` brand text to the public GitHub repository\n"
+                            "- Added per-conversation DM icons to the guild rail with a context menu action to hide chats from the rail\n"
+                            "- Brought DMs closer to thread capability parity with markdown/link embeds and multiple image uploads"
+                        ),
+                    ),
                 ]
             )
         member_group, _ = Group.objects.get_or_create(name="Member")

@@ -1,8 +1,9 @@
 from django.contrib.auth import get_user_model
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from django.urls import reverse
 
-from apps.dm.models import DirectConversation, DirectMessage
+from apps.dm.models import DirectConversation, DirectMessage, DirectMessageAttachment
 
 User = get_user_model()
 
@@ -33,3 +34,17 @@ class DirectMessageTests(TestCase):
         self.assertTrue(
             DirectMessage.objects.filter(conversation__user_low=self.alice, conversation__user_high=self.bob).exists()
         )
+
+    def test_start_dm_allows_attachment_only(self):
+        image = SimpleUploadedFile("photo.png", b"fake-png-bytes", content_type="image/png")
+
+        resp = self.client.post(
+            reverse("dm:start"),
+            data={"username": "bob", "body": "", "attachments": [image]},
+            follow=True,
+        )
+
+        self.assertEqual(resp.status_code, 200)
+        message = DirectMessage.objects.get(conversation__user_low=self.alice, conversation__user_high=self.bob)
+        self.assertEqual(message.get_body(), "")
+        self.assertTrue(DirectMessageAttachment.objects.filter(message=message, original_name="photo.png").exists())

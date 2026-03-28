@@ -9,6 +9,7 @@ from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_POST
 
 from apps.core.ratelimit import rate_limit
+from apps.dm.context_processors import invalidate_dm_context
 from apps.dm.forms import (
     DirectMessageForm,
     DirectMessagePreferenceForm,
@@ -16,7 +17,7 @@ from apps.dm.forms import (
     ReportDirectMessageForm,
     StartDirectMessageForm,
 )
-from apps.dm.models import DirectConversation, DirectMessage, DirectMessagePreference
+from apps.dm.models import DirectConversation, DirectMessage, DirectMessageAttachment, DirectMessagePreference
 User = get_user_model()
 
 
@@ -43,7 +44,7 @@ def _safe_next_url(request: HttpRequest, fallback: str) -> str:
     return fallback
 
 
-def _send_dm(conversation: DirectConversation, sender, recipient, body: str) -> None:
+def _send_dm(conversation: DirectConversation, sender, recipient, body: str, attachments=None) -> None:
     message = DirectMessage(
         conversation=conversation,
         sender=sender,
@@ -51,12 +52,27 @@ def _send_dm(conversation: DirectConversation, sender, recipient, body: str) -> 
     )
     message.set_body(body)
     message.save()
+    DirectMessageAttachment.objects.bulk_create(
+        [
+            DirectMessageAttachment(
+                message=message,
+                file=file,
+                original_name=file.name,
+                mime_type=file.content_type or "",
+                size_bytes=file.size,
+            )
+            for file in (attachments or [])
+        ]
+    )
     conversation.save(update_fields=["updated_at"])
+    invalidate_dm_context(sender.id, recipient.id)
 
 
 def _decrypted_messages_for(user, conversation: DirectConversation) -> list[DirectMessage]:
-    messages_qs = conversation.messages.select_related("sender", "recipient", "reported_by")
-    messages_qs.filter(recipient=user, is_read=False).update(is_read=True)
+    messages_qs = conversation.messages.select_related("sender", "recipient", "reported_by").prefetch_related("attachments")
+    updated_count = messages_qs.filter(recipient=user, is_read=False).update(is_read=True)
+    if updated_count:
+        invalidate_dm_context(user.id)
     dm_messages = list(messages_qs)
     for message in dm_messages:
         try:
@@ -173,12 +189,12 @@ def dm_conversation(request: HttpRequest, username: str) -> HttpResponse:
     target_accepts_dms = _incoming_dm_allowed(target)
     conversation = DirectConversation.for_users(request.user, target)
 
-    form = DirectMessageForm(request.POST)
+    form = DirectMessageForm(request.POST, request.FILES)
     if not target_accepts_dms:
         messages.error(request, f"@{target.username} has incoming DMs disabled.")
         return redirect(inbox_url)
     if form.is_valid():
-        _send_dm(conversation, request.user, target, form.cleaned_data["body"])
+        _send_dm(conversation, request.user, target, form.cleaned_data["body"], form.cleaned_data.get("attachments"))
         return redirect(inbox_url)
     messages.error(request, "Could not send DM. Please review the form.")
     return redirect(inbox_url)
@@ -210,7 +226,7 @@ def quick_dm_send(request: HttpRequest, username: str) -> HttpResponse:
 @require_POST
 @rate_limit(key_prefix="dm_start", max_ip_hits=120, max_user_hits=80, window_seconds=60)
 def start_dm(request: HttpRequest) -> HttpResponse:
-    form = StartDirectMessageForm(request.POST)
+    form = StartDirectMessageForm(request.POST, request.FILES)
     if not form.is_valid():
         messages.error(request, "Could not start DM. Enter a valid username and message.")
         return redirect("dm:inbox")
@@ -228,7 +244,7 @@ def start_dm(request: HttpRequest) -> HttpResponse:
         return redirect("dm:inbox")
 
     conversation = DirectConversation.for_users(request.user, target)
-    _send_dm(conversation, request.user, target, form.cleaned_data["body"])
+    _send_dm(conversation, request.user, target, form.cleaned_data["body"], form.cleaned_data.get("attachments"))
     return redirect(f"{reverse('dm:inbox')}?u={target.username}")
 
 
@@ -275,6 +291,7 @@ def reported_dm_queue(request: HttpRequest) -> HttpResponse:
     reported = list(
         DirectMessage.objects.filter(is_reported=True)
         .select_related("conversation", "sender", "recipient", "reported_by")
+        .prefetch_related("attachments")
         .order_by("-reported_at", "-created_at")[:200]
     )
     for message in reported:

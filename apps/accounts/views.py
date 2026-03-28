@@ -18,8 +18,10 @@ from django.views.generic import DetailView, FormView, UpdateView
 from django.views.decorators.http import require_GET, require_POST
 
 from apps.accounts.forms import CaptchaAwareAuthenticationForm, DeleteAccountForm, ProfileForm, SignUpForm
+from apps.core.context_processors import get_unread_notification_count, invalidate_notification_count
 from apps.core.models import LegalDocument, UserLegalConsent
 from apps.core.ratelimit import rate_limit
+from apps.dm.context_processors import get_dm_context_payload
 from apps.dm.models import DirectMessagePreference
 from apps.forum.models import ModerationWarning, Notification, Post, ReputationGrant, Thread
 from apps.forum.stats import apply_user_forum_stats, build_user_forum_stats
@@ -208,6 +210,7 @@ def mark_notification_read(request: HttpRequest, notification_id: int) -> HttpRe
     notification = get_object_or_404(Notification, id=notification_id, recipient=request.user)
     notification.is_read = True
     notification.save(update_fields=["is_read"])
+    invalidate_notification_count(request.user.id)
     next_url = (request.POST.get("next") or "").strip()
     if next_url and url_has_allowed_host_and_scheme(
         next_url,
@@ -216,6 +219,23 @@ def mark_notification_read(request: HttpRequest, notification_id: int) -> HttpRe
     ):
         return redirect(next_url)
     return redirect(f"{reverse('dm:inbox')}#inbox-activity")
+
+
+@login_required
+@require_GET
+@rate_limit(key_prefix="shell_state", max_ip_hits=240, max_user_hits=180, window_seconds=60)
+def shell_state(request: HttpRequest) -> JsonResponse:
+    dm_payload = get_dm_context_payload(request.user)
+    unread_notifications_count = get_unread_notification_count(request.user)
+    unread_dm_count = dm_payload["unread_dm_count"]
+    return JsonResponse(
+        {
+            "unread_dm_count": unread_dm_count,
+            "unread_notifications_count": unread_notifications_count,
+            "inbox_total": unread_dm_count + unread_notifications_count,
+            "has_dm_access": dm_payload["has_dm_access"],
+        }
+    )
 
 
 def export_personal_data(request: HttpRequest) -> HttpResponse:

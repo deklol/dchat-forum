@@ -101,6 +101,19 @@ select:focus-visible {
   transform: translateY(-1px);
 }
 
+.guild-pill-avatar {
+  width: 44px;
+  height: 44px;
+  display: block;
+  border-radius: 13px;
+  object-fit: cover;
+}
+
+.guild-pill-fallback {
+  font-size: 0.95rem;
+  font-weight: 800;
+}
+
 .guild-pill-home {
   background: linear-gradient(160deg, #6974f6, #4651d7);
 }
@@ -111,6 +124,32 @@ select:focus-visible {
 
 .guild-pill-admin {
   background: #964747;
+}
+
+.shell-context-menu {
+  position: fixed;
+  z-index: 1200;
+  min-width: 190px;
+  padding: 0.35rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  background: #111214;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.34);
+}
+
+.shell-context-menu button {
+  width: 100%;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  padding: 0.58rem 0.72rem;
+}
+
+.shell-context-menu button:hover {
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .workspace-shell {

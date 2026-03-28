@@ -17,7 +17,7 @@
     {% if user.is_authenticated %}
       {% if perms.forum.add_thread %}<a href="{% url 'forum:thread_create' %}">Create</a>{% endif %}
       {% with inbox_total=unread_dm_count|add:unread_notifications_count %}
-        <a href="{% url 'dm:inbox' %}">Inbox{% if inbox_total %} ({{ inbox_total }}){% endif %}</a>
+        <a href="{% url 'dm:inbox' %}" data-inbox-link>Inbox<span data-inbox-count{% if not inbox_total %} hidden{% endif %}>{% if inbox_total %} ({{ inbox_total }}){% endif %}</span></a>
       {% endwith %}
       <a href="{% url 'accounts:profile' username=user.username %}">Profile</a>
       {% if perms.forum.change_report %}<a href="{% url 'forum:moderation_queue' %}">Moderation</a>{% endif %}

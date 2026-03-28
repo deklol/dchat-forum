@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from apps.dm.models import DirectConversation, DirectMessage, DirectMessagePreference
+from apps.dm.models import DirectConversation, DirectMessage, DirectMessageAttachment, DirectMessagePreference
 
 
 @admin.register(DirectConversation)
@@ -21,3 +21,9 @@ class DirectMessagePreferenceAdmin(admin.ModelAdmin):
     list_display = ("user", "allow_incoming", "updated_at")
     list_filter = ("allow_incoming",)
     search_fields = ("user__username",)
+
+
+@admin.register(DirectMessageAttachment)
+class DirectMessageAttachmentAdmin(admin.ModelAdmin):
+    list_display = ("id", "message", "original_name", "size_bytes", "uploaded_at")
+    search_fields = ("original_name", "message__sender__username", "message__recipient__username")

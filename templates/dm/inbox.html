@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load forum_format %}
 {% block content %}
 <section class="dm-page">
   <div class="dm-workspace">
@@ -10,7 +11,7 @@
         </div>
         <div class="dm-rail-actions">
           {% with inbox_total=unread_dm_count|add:unread_notifications_count %}
-            {% if inbox_total %}<span class="sidebar-chip">{{ inbox_total }} unread</span>{% endif %}
+            <span class="sidebar-chip" data-inbox-unread-chip{% if not inbox_total %} hidden{% endif %}>{% if inbox_total %}{{ inbox_total }} unread{% endif %}</span>
           {% endwith %}
           <a href="{% url 'dm:settings' %}" class="sidebar-chip">Settings</a>
         </div>
@@ -21,12 +22,14 @@
           <h2>Start A DM</h2>
           <p class="muted">Open a conversation without leaving the inbox.</p>
         </div>
-        <form method="post" action="{% url 'dm:start' %}" class="dm-launcher-form">
+        <form method="post" action="{% url 'dm:start' %}" class="dm-launcher-form" enctype="multipart/form-data">
           {% csrf_token %}
           <label for="id_dm_start_username">Username</label>
           <input id="id_dm_start_username" type="text" name="username" maxlength="150" placeholder="@username" autocomplete="off" required>
           <label for="id_dm_start_body">First message</label>
-          <input id="id_dm_start_body" type="text" name="body" maxlength="1000" placeholder="Write first message..." autocomplete="off" required>
+          <input id="id_dm_start_body" type="text" name="body" maxlength="1000" placeholder="Write first message..." autocomplete="off">
+          <label for="id_dm_start_attachments">Images</label>
+          <input id="id_dm_start_attachments" type="file" name="attachments" accept=".png,.jpg,.jpeg,.gif" multiple>
           <button type="submit">Send</button>
         </form>
       </section>
@@ -109,7 +112,23 @@
                   {% if message.is_reported %}<span class="badge">Reported</span>{% endif %}
                 </div>
                 <div class="dm-message-bubble">
-                  <div class="markdown-body">{{ message.body_plain|linebreaksbr }}</div>
+                  {% if message.body_plain %}
+                    <div class="markdown-body">{{ message.body_plain|render_markdown_plain }}</div>
+                  {% endif %}
+                  {% if message.attachments.all %}
+                    <div class="attachment-preview-list">
+                      {% for attachment in message.attachments.all %}
+                        <figure class="attachment-preview">
+                          <a href="{{ attachment.file.url }}" target="_blank" rel="noopener">
+                            <img src="{{ attachment.file.url }}" alt="{{ attachment.original_name }}" loading="lazy">
+                          </a>
+                          <figcaption>
+                            <a href="{{ attachment.file.url }}" target="_blank" rel="noopener">{{ attachment.original_name }}</a>
+                          </figcaption>
+                        </figure>
+                      {% endfor %}
+                    </div>
+                  {% endif %}
                 </div>
                 {% if message.sender_id != user.id and not message.is_reported %}
                   <form method="post" action="{% url 'dm:report_message' message_id=message.id %}" class="dm-report-form">
@@ -130,10 +149,12 @@
 
         <footer class="dm-pane-composer">
           {% if target_accepts_dms %}
-            <form method="post" action="{% url 'dm:conversation' username=target_user.username %}" class="dm-compose-form">
+            <form method="post" action="{% url 'dm:conversation' username=target_user.username %}" class="dm-compose-form" enctype="multipart/form-data">
               {% csrf_token %}
               <label for="{{ form.body.id_for_label }}" class="visually-hidden">Direct message body</label>
               {{ form.body }}
+              <label for="{{ form.attachments.id_for_label }}" class="visually-hidden">Direct message images</label>
+              {{ form.attachments }}
               <div class="dm-compose-actions">
                 <p class="muted">Encrypted at rest, delivered over HTTPS.</p>
                 <button type="submit">Send DM</button>
@@ -151,7 +172,7 @@
             <p class="eyebrow">Inbox Activity</p>
             <h2>Mentions, Replies, And System Notes</h2>
           </div>
-          {% if unread_notifications_count %}<span class="badge">{{ unread_notifications_count }} unread</span>{% endif %}
+          <span class="badge" data-notification-unread-badge{% if not unread_notifications_count %} hidden{% endif %}>{% if unread_notifications_count %}{{ unread_notifications_count }} unread{% endif %}</span>
         </header>
 
         <div class="dm-activity-feed">
