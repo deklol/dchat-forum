@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="workspace-grid workspace-grid-home">
+  <aside class="sidebar-pane stream-sidebar">
+    <section class="sidebar-section">
+      <div class="sidebar-heading-row">
+        <div class="sidebar-heading-main">
+          {% if active_category_slug %}
+            <a href="{% url 'forum:home' %}" class="mini-action mini-action-back" data-go-back aria-label="Go back">&larr;</a>
+          {% endif %}
+          <h2>Topics</h2>
+        </div>
+        {% if user.is_authenticated and perms.forum.add_thread %}
+          <a href="{% url 'forum:thread_create' %}" class="mini-action" aria-label="Create thread">+</a>
+        {% endif %}
+      </div>
+      <ul class="stream-list">
+        {% for category in categories %}
+          <li class="stream-item">
+            <a href="{% url 'forum:home' %}?category={{ category.slug }}" class="stream-link{% if active_category_slug == category.slug %} is-active{% endif %}">
+              <span class="stream-hash">#</span>
+              <span class="stream-label">{{ category.name }}</span>
+              <span class="stream-count">{{ category.thread_count }}</span>
+            </a>
+            {% if category.active_threads_24h %}
+              <ul class="stream-subthreads">
+                {% for hot_thread in category.active_threads_24h %}
+                  <li>
+                    <a href="{{ hot_thread.get_absolute_url }}" class="stream-subthread-link" title="{{ hot_thread.title }}">
+                      <span class="stream-subthread-main">
+                        {% if hot_thread.is_fresh %}<span class="stream-subthread-fresh" aria-hidden="true">&#9733;</span>{% endif %}
+                        <span class="stream-subthread-title">{{ hot_thread.title }}</span>
+                      </span>
+                      <span class="stream-subthread-meta">
+                        <span class="stream-subthread-count">{{ hot_thread.reply_count }}</span>
+                        {% if hot_thread.unread_mention_count %}<span class="mention-mini-badge">{{ hot_thread.unread_mention_count }}</span>{% endif %}
+                      </span>
+                    </a>
+                  </li>
+                {% endfor %}
+              </ul>
+            {% endif %}
+          </li>
+        {% empty %}
+          <li class="empty-copy">No topics yet.</li>
+        {% endfor %}
+      </ul>
+    </section>
+
+    <section class="sidebar-section">
+      <h3>Forum Access</h3>
+      {% if user.is_authenticated %}
+        <p class="sidebar-note">You can post, reply, vote, mention users, and customize your profile.</p>
+      {% else %}
+        <p class="sidebar-note">Everything is readable. Sign up to post, reply, vote, and join live discussions.</p>
+        <a href="{% url 'accounts:register' %}" class="sidebar-cta">Create Account</a>
+      {% endif %}
+    </section>
+  </aside>
+
+  <section class="main-pane">
+    <header class="toolbar">
+      <div>
+        <p class="eyebrow">Forum</p>
+        <h1>{% if active_category_slug %}Filtered Topics{% else %}Latest Topics{% endif %}</h1>
+      </div>
+    </header>
+
+    <section class="topic-pane">
+      <div class="topic-pane-head">
+        <span>Topic</span>
+        <span>Activity</span>
+      </div>
+
+      <div class="topic-list">
+        {% for thread in threads %}
+          <article class="topic-row {% if thread.is_locked %}topic-row-locked{% endif %} {% if thread.has_unread_mentions %}topic-row-mentioned{% endif %}">
+            <div class="topic-main">
+              <div class="topic-line">
+                <span class="topic-marker">
+                  {% if thread.is_announcement %}!{% elif thread.is_pinned %}*{% else %}# {% endif %}
+                </span>
+                <h2><a href="{{ thread.get_absolute_url }}">{{ thread.title }}</a></h2>
+              </div>
+              <p class="topic-meta">
+                <a href="{% url 'accounts:profile' username=thread.author.username %}" data-user-card="{{ thread.author.username }}">{{ thread.author.username }}</a>
+                in #{{ thread.category.name }}
+                {% for tag in thread.tags.all %}
+                  <span class="topic-tag">{{ tag.name }}</span>
+                {% endfor %}
+                {% if thread.is_announcement %}<span class="badge">Announcement</span>{% endif %}
+                {% if thread.is_pinned %}<span class="badge">Pinned</span>{% endif %}
+                {% if thread.is_locked %}<span class="badge">Locked</span>{% endif %}
+                {% if thread.unread_mention_count %}<span class="mention-thread-badge">{{ thread.unread_mention_count }} mention{% if thread.unread_mention_count != 1 %}s{% endif %}</span>{% endif %}
+              </p>
+            </div>
+            <div class="topic-stats">
+              <strong>{{ thread.reply_count }}</strong>
+              <span>replies</span>
+              <time datetime="{{ thread.updated_at|date:'c' }}">{{ thread.updated_at|date:"M j, Y H:i" }}</time>
+            </div>
+          </article>
+        {% empty %}
+          <p class="empty-copy">No threads yet.</p>
+        {% endfor %}
+      </div>
+    </section>
+  </section>
+
+  <aside class="sidebar-pane info-sidebar">
+    <section class="sidebar-section">
+      <h3>Announcements</h3>
+      <ul class="side-list">
+        {% for thread in announcements %}
+          <li>
+            <a href="{{ thread.get_absolute_url }}">{{ thread.title }}</a>
+            <span>{% if thread.unread_mention_count %}<span class="mention-mini-badge">{{ thread.unread_mention_count }}</span>{% endif %} {{ thread.reply_count }} replies</span>
+          </li>
+        {% empty %}
+          <li class="empty-copy">No announcements right now.</li>
+        {% endfor %}
+      </ul>
+    </section>
+
+    <section class="sidebar-section">
+      <h3>Recently Active</h3>
+      <ul class="side-list">
+        {% for thread in recent_threads %}
+          <li>
+            <a href="{{ thread.get_absolute_url }}">{{ thread.title }}</a>
+            <span>{% if thread.unread_mention_count %}<span class="mention-mini-badge">{{ thread.unread_mention_count }}</span>{% endif %} {{ thread.updated_at|date:"M j H:i" }}</span>
+          </li>
+        {% empty %}
+          <li class="empty-copy">No activity yet.</li>
+        {% endfor %}
+      </ul>
+    </section>
+
+    {% include "components/sidebar_community.html" %}
+  </aside>
+</section>
+
+<div id="user-card-overlay" class="user-card-overlay hidden"></div>
+{% endblock %}

@@ -1,0 +1,136 @@
+{% load forum_format %}
+{% with post=node.post %}
+  <article class="forum-post forum-post-reply depth-{{ node.depth }}{% if node.depth %} is-nested{% endif %}" id="post-{{ post.id }}">
+    {% if not node.depth %}
+      <aside class="forum-post-author">
+        {% if post.author.avatar %}
+          <img src="{{ post.author.avatar.url }}" alt="{{ post.author.username }}" class="forum-post-avatar" width="64" height="64">
+        {% else %}
+          <div class="forum-post-avatar forum-post-avatar-fallback" aria-hidden="true">{{ post.author.username|slice:":1"|upper }}</div>
+        {% endif %}
+        <a href="{% url 'accounts:profile' username=post.author.username %}" class="user-link" data-user-card="{{ post.author.username }}">{{ post.author.username }}</a>
+        {% include "components/user_role_badge.html" with role_user=post.author %}
+        {% include "components/user_forum_stats.html" with stats_user=post.author %}
+      </aside>
+    {% endif %}
+
+    <div class="forum-post-main">
+      {% if node.depth %}
+        <div class="forum-post-compact-head">
+          <a href="{% url 'accounts:profile' username=post.author.username %}" class="forum-post-compact-user" data-user-card="{{ post.author.username }}">
+            {% if post.author.avatar %}
+              <img src="{{ post.author.avatar.url }}" alt="{{ post.author.username }}" class="forum-post-compact-avatar" width="28" height="28">
+            {% else %}
+              <span class="forum-post-compact-avatar forum-post-compact-avatar-fallback" aria-hidden="true">{{ post.author.username|slice:":1"|upper }}</span>
+            {% endif %}
+            <span class="forum-post-compact-name">{{ post.author.username }}</span>
+          </a>
+          {% include "components/user_role_badge.html" with role_user=post.author %}
+        </div>
+      {% endif %}
+
+      <div class="forum-post-meta">
+        <a href="#post-{{ post.id }}" class="post-permalink" data-post-link="#post-{{ post.id }}" title="Copy direct link">
+          <time datetime="{{ post.created_at|date:'c' }}">{{ post.created_at|date:"M j, Y H:i" }}</time>
+        </a>
+        {% if post.edited_at %}<span class="muted">edited</span>{% endif %}
+        {% if post.parent %}
+          <a href="#post-{{ post.parent.id }}" class="reply-context">
+            replying to @{{ post.parent.author.username }}
+          </a>
+        {% endif %}
+      </div>
+
+      {% if post.is_deleted and not perms.forum.change_post %}
+        <div class="forum-post-body markdown-body muted">[deleted]</div>
+      {% else %}
+        {% if post.body_markdown %}
+          <div class="forum-post-body markdown-body">{{ post.body_markdown|render_markdown }}</div>
+        {% endif %}
+      {% endif %}
+
+      {% if post.attachments.all %}
+        <div class="attachment-preview-list">
+          {% for attachment in post.attachments.all %}
+            <figure class="attachment-preview">
+              <a href="{{ attachment.file.url }}" target="_blank" rel="noopener">
+                <img src="{{ attachment.file.url }}" alt="{{ attachment.original_name }}" loading="lazy">
+              </a>
+              <figcaption>
+                <a href="{{ attachment.file.url }}" target="_blank" rel="noopener">{{ attachment.original_name }}</a>
+              </figcaption>
+            </figure>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      <div class="forum-post-actions">
+        {% if user.is_authenticated %}
+          {% if post.can_receive_rep %}
+            <form method="post" action="{% url 'forum:grant_reputation' %}" class="inline-form">
+              {% csrf_token %}
+              <input type="hidden" name="target_type" value="post">
+              <input type="hidden" name="target_id" value="{{ post.id }}">
+              <input type="hidden" name="next" value="{{ thread.get_absolute_url }}#post-{{ post.id }}">
+              <button type="submit">+Rep</button>
+            </form>
+          {% elif post.user_has_given_rep %}
+            <button type="button" disabled>Rep Given</button>
+          {% endif %}
+          {% if not thread.is_locked or perms.forum.change_post %}
+            <button type="button" class="reply-trigger" data-reply-to="{{ post.id }}" data-reply-name="{{ post.author.username }}">Reply</button>
+            <button type="button" class="quote-trigger" data-quote-author="{{ post.author.username }}">Quote</button>
+          {% endif %}
+        {% endif %}
+        {% if user.id == post.author_id or user.is_staff %}
+          <a href="{% url 'forum:post_edit' post_id=post.id %}">Edit</a>
+        {% endif %}
+        {% if user.is_authenticated and perms.forum.add_report %}
+          <form method="post" action="{% url 'forum:report' %}" class="inline-form">
+            {% csrf_token %}
+            <input type="hidden" name="target_type" value="post">
+            <input type="hidden" name="target_id" value="{{ post.id }}">
+            <input type="hidden" name="reason" value="inappropriate-content">
+            <button type="submit">Report</button>
+          </form>
+        {% endif %}
+        {% if perms.forum.change_post %}
+          {% if post.can_warn_author %}
+            <form method="post" action="{% url 'forum:warn_user' %}" class="inline-form">
+              {% csrf_token %}
+              <input type="hidden" name="target_type" value="post">
+              <input type="hidden" name="target_id" value="{{ post.id }}">
+              <input type="hidden" name="note" value="post warning">
+              <input type="hidden" name="next" value="{{ thread.get_absolute_url }}#post-{{ post.id }}">
+              <button type="submit" class="danger-btn" onclick="return confirm('Warn this user and deduct 1 rep?');">Warn</button>
+            </form>
+          {% endif %}
+          {% if not post.is_deleted %}
+            <form method="post" action="{% url 'forum:soft_delete' %}" class="inline-form">
+              {% csrf_token %}
+              <input type="hidden" name="target_type" value="post">
+              <input type="hidden" name="target_id" value="{{ post.id }}">
+              <input type="hidden" name="note" value="moderator-review">
+              <button type="submit">Soft Delete</button>
+            </form>
+          {% else %}
+            <form method="post" action="{% url 'forum:restore' %}" class="inline-form">
+              {% csrf_token %}
+              <input type="hidden" name="target_type" value="post">
+              <input type="hidden" name="target_id" value="{{ post.id }}">
+              <button type="submit">Restore</button>
+            </form>
+          {% endif %}
+        {% endif %}
+      </div>
+
+      {% if node.children %}
+        <div class="post-children">
+          {% for child in node.children %}
+            {% include "forum/partials/post_node.html" with node=child thread=thread %}
+          {% endfor %}
+        </div>
+      {% endif %}
+    </div>
+  </article>
+{% endwith %}

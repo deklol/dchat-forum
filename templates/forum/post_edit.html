@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="form-shell">
+  <div class="form-shell-head">
+    <p class="eyebrow">Reply</p>
+    <h1>Edit Reply</h1>
+  </div>
+  <form method="post" enctype="multipart/form-data" class="form-grid post-composer standalone-composer" data-composer-root>
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+    {% include "components/markdown_toolbar.html" %}
+    <p>
+      {{ form.body_markdown.label_tag }}
+      {{ form.body_markdown }}
+      {{ form.body_markdown.errors }}
+    </p>
+    <div class="mention-menu is-hidden" data-mention-menu role="listbox" aria-label="Mention suggestions"></div>
+    <p>
+      {{ form.attachment.label_tag }}
+      {{ form.attachment }}
+      {{ form.attachment.errors }}
+    </p>
+    <div class="composer-actions standalone-actions">
+      <p class="muted">Use Markdown for quotes, code, embeds, and mentions.</p>
+      <button type="submit">Save Changes</button>
+    </div>
+  </form>
+</section>
+{{ mentionable_users|json_script:"mentionable-users-data" }}
+{% endblock %}

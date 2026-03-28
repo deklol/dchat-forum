@@ -1,0 +1,17 @@
+<section class="sidebar-section">
+  <div class="sidebar-heading-row">
+    <h3>dChat</h3>
+    <span class="sidebar-version-pill">v{{ app_version }}</span>
+  </div>
+
+  <div class="sidebar-link-grid">
+    <a href="{% url 'legal_doc' doc_type='terms' %}">Terms</a>
+    <a href="{% url 'legal_doc' doc_type='privacy' %}">Privacy</a>
+    <a href="{% url 'legal_doc' doc_type='cookies' %}">Cookies</a>
+    <a href="{% url 'changelog' %}">Changelog</a>
+    <a href="{% url 'docs_page' slug='faq' %}">FAQ</a>
+    {% for link in footer_links %}
+      <a href="/out/?u={{ link.url|urlencode }}">{{ link.label }}</a>
+    {% endfor %}
+  </div>
+</section>

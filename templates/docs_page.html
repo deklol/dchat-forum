@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% load forum_format %}
+{% block content %}
+<section class="workspace-grid reading-workspace">
+  <aside class="sidebar-pane stream-sidebar">
+    <section class="sidebar-section">
+      <div class="sidebar-heading-row">
+        <div class="sidebar-heading-main">
+          <a href="{% url 'forum:home' %}" class="mini-action mini-action-back" data-go-back aria-label="Go back">&larr;</a>
+          <h2>Docs</h2>
+        </div>
+        <span class="sidebar-version-pill">Guide</span>
+      </div>
+      <div class="sidebar-link-grid legal-link-grid">
+        <a href="{% url 'docs_page' slug='readme' %}"{% if doc_slug == "readme" %} class="is-active"{% endif %}>Readme</a>
+        <a href="{% url 'docs_page' slug='install' %}"{% if doc_slug == "install" %} class="is-active"{% endif %}>Install</a>
+        <a href="{% url 'docs_page' slug='faq' %}"{% if doc_slug == "faq" %} class="is-active"{% endif %}>FAQ</a>
+        <a href="{% url 'changelog' %}">Changelog</a>
+      </div>
+    </section>
+
+    <section class="sidebar-section">
+      <h3>Legal</h3>
+      <div class="sidebar-link-grid legal-link-grid">
+        <a href="{% url 'legal_doc' doc_type='terms' %}">Terms</a>
+        <a href="{% url 'legal_doc' doc_type='privacy' %}">Privacy</a>
+        <a href="{% url 'legal_doc' doc_type='cookies' %}">Cookies</a>
+      </div>
+    </section>
+  </aside>
+
+  <section class="main-pane reading-main-pane">
+    <header class="page-head reading-page-head">
+      <p class="eyebrow">Docs</p>
+      <h1>{{ doc_title }}</h1>
+    </header>
+    <article class="reading-shell markdown-body policy-reading">{{ doc_body|render_markdown_plain }}</article>
+  </section>
+
+  <aside class="sidebar-pane info-sidebar">
+    <section class="sidebar-section">
+      <h3>Deployment</h3>
+      <p class="sidebar-note">These pages ship with the app for operators and admins. Review the legal pages and customize the operator contact details before going public.</p>
+    </section>
+
+    <section class="sidebar-section">
+      <h3>Contact</h3>
+      <p class="sidebar-note">{% if legal_contact_email %}<a href="mailto:{{ legal_contact_email }}">{{ legal_contact_email }}</a>{% else %}Set an operator contact in your legal pages.{% endif %}</p>
+    </section>
+  </aside>
+</section>
+{% endblock %}

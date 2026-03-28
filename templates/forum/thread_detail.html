@@ -1,0 +1,291 @@
+{% extends "base.html" %}
+{% load forum_format %}
+{% block content %}
+<section class="workspace-grid workspace-grid-thread">
+  <aside class="sidebar-pane stream-sidebar">
+    <section class="sidebar-section">
+      <div class="sidebar-heading-row">
+        <div class="sidebar-heading-main">
+          <a href="{% url 'forum:home' %}" class="mini-action mini-action-back" data-go-back aria-label="Go back">&larr;</a>
+          <h2>Topics</h2>
+        </div>
+        {% if user.is_authenticated and perms.forum.add_thread %}
+          <a href="{% url 'forum:thread_create' %}" class="mini-action" aria-label="Create thread">+</a>
+        {% endif %}
+      </div>
+      <ul class="stream-list">
+        {% for category in categories %}
+          <li class="stream-item">
+            <a href="{% url 'forum:home' %}?category={{ category.slug }}" class="stream-link{% if thread.category_id == category.id %} is-active{% endif %}">
+              <span class="stream-hash">#</span>
+              <span class="stream-label">{{ category.name }}</span>
+              <span class="stream-count">{{ category.thread_count }}</span>
+            </a>
+            {% if category.active_threads_24h %}
+              <ul class="stream-subthreads">
+                {% for hot_thread in category.active_threads_24h %}
+                  <li>
+                    <a href="{{ hot_thread.get_absolute_url }}" class="stream-subthread-link{% if hot_thread.id == thread.id %} is-active{% endif %}" title="{{ hot_thread.title }}">
+                      <span class="stream-subthread-main">
+                        {% if hot_thread.is_fresh %}<span class="stream-subthread-fresh" aria-hidden="true">&#9733;</span>{% endif %}
+                        <span class="stream-subthread-title">{{ hot_thread.title }}</span>
+                      </span>
+                      <span class="stream-subthread-meta">
+                        <span class="stream-subthread-count">{{ hot_thread.reply_count }}</span>
+                        {% if hot_thread.unread_mention_count %}<span class="mention-mini-badge">{{ hot_thread.unread_mention_count }}</span>{% endif %}
+                      </span>
+                    </a>
+                  </li>
+                {% endfor %}
+              </ul>
+            {% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+    </section>
+
+  </aside>
+
+  <section class="main-pane conversation-pane">
+    <header class="toolbar conversation-toolbar">
+      <div>
+        <p class="eyebrow"># {{ thread.category.name }}</p>
+        <h1>{{ thread.title }}</h1>
+      </div>
+      <div class="toolbar-status">
+        {% if thread.is_announcement %}<span class="badge">Announcement</span>{% endif %}
+        {% if thread.is_pinned %}<span class="badge">Pinned</span>{% endif %}
+        {% if thread.is_locked %}<span class="badge">Locked</span>{% endif %}
+      </div>
+    </header>
+
+    <section class="thread-summary">
+      <article class="forum-post thread-starter-post" id="post-thread-starter">
+        <aside class="forum-post-author">
+          {% if thread.author.avatar %}
+            <img src="{{ thread.author.avatar.url }}" alt="{{ thread.author.username }}" class="forum-post-avatar" width="72" height="72">
+          {% else %}
+            <div class="forum-post-avatar forum-post-avatar-fallback" aria-hidden="true">{{ thread.author.username|slice:":1"|upper }}</div>
+          {% endif %}
+          <a href="{% url 'accounts:profile' username=thread.author.username %}" class="user-link" data-user-card="{{ thread.author.username }}">{{ thread.author.username }}</a>
+          {% include "components/user_role_badge.html" with role_user=thread.author %}
+          <p class="muted">Topic starter</p>
+          {% include "components/user_forum_stats.html" with stats_user=thread.author %}
+        </aside>
+        <div class="forum-post-main">
+          <div class="forum-post-meta">
+            <a href="#post-thread-starter" class="post-permalink" data-post-link="#post-thread-starter" title="Copy direct link">
+              Posted {{ thread.created_at|date:"M j, Y H:i" }}
+            </a>
+            {% if thread.tags.all %}
+              {% for tag in thread.tags.all %}
+                <span class="topic-tag">{{ tag.name }}</span>
+              {% endfor %}
+            {% endif %}
+          </div>
+          <div class="forum-post-body markdown-body">{{ thread.body_markdown|render_markdown }}</div>
+          {% if thread_lead_attachments %}
+            <div class="attachment-preview-list">
+              {% for attachment in thread_lead_attachments %}
+                <figure class="attachment-preview">
+                  <a href="{{ attachment.file.url }}" target="_blank" rel="noopener">
+                    <img src="{{ attachment.file.url }}" alt="{{ attachment.original_name }}" loading="lazy">
+                  </a>
+                  <figcaption>
+                    <a href="{{ attachment.file.url }}" target="_blank" rel="noopener">{{ attachment.original_name }}</a>
+                  </figcaption>
+                </figure>
+              {% endfor %}
+            </div>
+          {% endif %}
+          <div class="forum-post-actions">
+            {% if user.is_authenticated %}
+              {% if thread.can_receive_rep %}
+                <form method="post" action="{% url 'forum:grant_reputation' %}" class="inline-form">
+                  {% csrf_token %}
+                  <input type="hidden" name="target_type" value="thread">
+                  <input type="hidden" name="target_id" value="{{ thread.id }}">
+                  <input type="hidden" name="next" value="{{ canonical_url }}#post-thread-starter">
+                  <button type="submit">+Rep</button>
+                </form>
+              {% elif thread.user_has_given_rep %}
+                <button type="button" disabled>Rep Given</button>
+              {% endif %}
+            {% endif %}
+            {% if thread.can_warn_author %}
+              <form method="post" action="{% url 'forum:warn_user' %}" class="inline-form">
+                {% csrf_token %}
+                <input type="hidden" name="target_type" value="thread">
+                <input type="hidden" name="target_id" value="{{ thread.id }}">
+                <input type="hidden" name="note" value="thread warning">
+                <input type="hidden" name="next" value="{{ canonical_url }}#post-thread-starter">
+                <button type="submit" class="danger-btn" onclick="return confirm('Warn this user and deduct 1 rep?');">Warn</button>
+              </form>
+            {% endif %}
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <section class="message-feed" id="thread-posts-root" data-thread-id="{{ thread.id }}">
+      {% include "forum/partials/post_list.html" with posts=posts post_tree=post_tree thread=thread %}
+    </section>
+
+    {% if user.is_authenticated %}
+      <section class="composer-shell">
+        {% if thread.is_locked and not can_moderate %}
+          <p class="muted">This thread is locked. You can still read it, but replies are disabled.</p>
+        {% else %}
+          <div class="composer-header">
+            <div>
+              <p class="eyebrow">Reply</p>
+              <h2>Write A Reply</h2>
+            </div>
+            {% if thread.is_locked and can_moderate %}
+              <p class="muted">Locked for members. Moderator replies stay enabled.</p>
+            {% endif %}
+          </div>
+          <form method="post" action="{% url 'forum:post_reply' thread_id=thread.id %}" enctype="multipart/form-data" class="form-grid post-composer" data-post-composer data-composer-root>
+            {% csrf_token %}
+            <input type="hidden" name="parent_id" id="reply-parent-id" value="" data-reply-parent-input>
+            <div class="reply-target is-hidden" id="reply-target">
+              <span id="reply-target-label"></span>
+              <button type="button" class="composer-tool composer-tool-clear" id="reply-target-clear">Clear</button>
+            </div>
+            {% include "components/markdown_toolbar.html" %}
+            <p>
+              {{ post_form.body_markdown.label_tag }}
+              {{ post_form.body_markdown }}
+            </p>
+            <div class="mention-menu is-hidden" id="mention-menu" data-mention-menu role="listbox" aria-label="Mention suggestions"></div>
+            <div class="composer-footer">
+              <p>
+                {{ post_form.attachment.label_tag }}
+                {{ post_form.attachment }}
+              </p>
+              <div class="composer-actions">
+                <p class="muted">Supports Markdown, @mentions, embeds, and image uploads up to 8 MB.</p>
+                <button type="submit">Post Reply</button>
+              </div>
+            </div>
+          </form>
+        {% endif %}
+      </section>
+    {% else %}
+      <section class="composer-shell composer-shell-guest">
+        <p><a href="{% url 'accounts:register' %}">Sign up</a> to reply, vote, mention users, and customize your profile.</p>
+      </section>
+    {% endif %}
+  </section>
+
+  <aside class="sidebar-pane inspector-pane">
+    <section class="sidebar-section">
+      <h3>Thread Info</h3>
+      <dl class="meta-list">
+        <div><dt>Topic</dt><dd>#{{ thread.category.name }}</dd></div>
+        <div><dt>Replies</dt><dd>{{ reply_count }}</dd></div>
+        <div><dt>Participants</dt><dd>{{ participant_count }}</dd></div>
+        <div><dt>Updated</dt><dd>{{ thread.updated_at|date:"M j, Y H:i" }}</dd></div>
+      </dl>
+
+      <div class="vote-box" data-target-type="thread" data-target-id="{{ thread.id }}">
+        {% if user.is_authenticated %}
+          <button class="vote-btn" data-vote="1" type="button" aria-label="Upvote thread">+</button>
+          <button class="vote-btn" data-vote="-1" type="button" aria-label="Downvote thread">-</button>
+        {% endif %}
+        <span class="score">{{ thread_votes }}</span>
+      </div>
+    </section>
+
+    <section class="sidebar-section">
+      <div class="member-list-head">
+        <h3>Participants</h3>
+        <span>{{ participant_count }}</span>
+      </div>
+      <div class="participant-list">
+        {% for participant in thread_participants %}
+          <a href="{% url 'accounts:profile' username=participant.username %}" class="participant-item" data-user-card="{{ participant.username }}">
+            {% if participant.avatar %}
+              <img src="{{ participant.avatar.url }}" alt="{{ participant.username }}" class="participant-avatar" width="40" height="40">
+            {% else %}
+              <span class="participant-avatar participant-avatar-fallback" aria-hidden="true">{{ participant.username|slice:":1"|upper }}</span>
+            {% endif %}
+            <span class="participant-meta">
+              <span class="participant-name">
+                {{ participant.username }}
+                {% if participant.is_thread_author %}<span class="participant-note">starter</span>{% endif %}
+              </span>
+              {% include "components/user_role_badge.html" with role_user=participant %}
+            </span>
+            <span class="participant-status{% if participant.is_currently_online %} is-online{% endif %}" aria-hidden="true"></span>
+          </a>
+        {% empty %}
+          <p class="empty-copy">No participants yet.</p>
+        {% endfor %}
+      </div>
+    </section>
+
+    {% include "components/sidebar_community.html" %}
+
+    <section class="sidebar-section">
+      <h3>Actions</h3>
+      {% if user.is_authenticated and perms.forum.add_report %}
+        <form method="post" action="{% url 'forum:report' %}" class="stack-form">
+          {% csrf_token %}
+          <input type="hidden" name="target_type" value="thread">
+          <input type="hidden" name="target_id" value="{{ thread.id }}">
+          <input type="hidden" name="reason" value="inappropriate-content">
+          <button type="submit">Report Thread</button>
+        </form>
+      {% endif %}
+
+      {% if can_moderate %}
+        <form method="post" action="{% url 'forum:thread_flags' thread_id=thread.id %}" class="stack-form">
+          {% csrf_token %}
+          <input type="hidden" name="flag" value="is_pinned">
+          <input type="hidden" name="value" value="{% if thread.is_pinned %}0{% else %}1{% endif %}">
+          <button type="submit">{% if thread.is_pinned %}Unpin Thread{% else %}Pin Thread{% endif %}</button>
+        </form>
+        <form method="post" action="{% url 'forum:thread_flags' thread_id=thread.id %}" class="stack-form">
+          {% csrf_token %}
+          <input type="hidden" name="flag" value="is_announcement">
+          <input type="hidden" name="value" value="{% if thread.is_announcement %}0{% else %}1{% endif %}">
+          <button type="submit">{% if thread.is_announcement %}Remove Announcement{% else %}Make Announcement{% endif %}</button>
+        </form>
+        <form method="post" action="{% url 'forum:thread_flags' thread_id=thread.id %}" class="stack-form">
+          {% csrf_token %}
+          <input type="hidden" name="flag" value="is_locked">
+          <input type="hidden" name="value" value="{% if thread.is_locked %}0{% else %}1{% endif %}">
+          <button type="submit">{% if thread.is_locked %}Unlock Thread{% else %}Lock Thread{% endif %}</button>
+        </form>
+        {% if not thread.is_deleted %}
+          <form method="post" action="{% url 'forum:soft_delete' %}" class="stack-form">
+            {% csrf_token %}
+            <input type="hidden" name="target_type" value="thread">
+            <input type="hidden" name="target_id" value="{{ thread.id }}">
+            <input type="hidden" name="note" value="moderator-review">
+            <button type="submit">Soft Delete Thread</button>
+          </form>
+          {% if perms.forum.delete_thread %}
+            <form method="post" action="{% url 'forum:hard_delete_thread' thread_id=thread.id %}" class="stack-form">
+              {% csrf_token %}
+              <input type="hidden" name="note" value="admin-nuke">
+              <button type="submit" class="danger-btn" onclick="return confirm('Permanently delete this thread and all replies? This cannot be undone.');">Nuke Thread</button>
+            </form>
+          {% endif %}
+        {% else %}
+          <form method="post" action="{% url 'forum:restore' %}" class="stack-form">
+            {% csrf_token %}
+            <input type="hidden" name="target_type" value="thread">
+            <input type="hidden" name="target_id" value="{{ thread.id }}">
+            <button type="submit">Restore Thread</button>
+          </form>
+        {% endif %}
+      {% endif %}
+    </section>
+  </aside>
+</section>
+
+<div id="user-card-overlay" class="user-card-overlay hidden"></div>
+{{ mentionable_users|json_script:"mentionable-users-data" }}
+{% endblock %}

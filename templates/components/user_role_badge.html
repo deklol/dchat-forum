@@ -1,0 +1,14 @@
+{% load forum_format %}
+{% with role=role_user|user_role %}
+  <p class="role-badge role-badge-{{ role }}">
+    {% if role == "admin" %}
+      <span class="role-glyph" aria-hidden="true">♛</span>
+      Admin
+    {% elif role == "moderator" %}
+      <span class="role-glyph" aria-hidden="true">✦</span>
+      Moderator
+    {% else %}
+      Member
+    {% endif %}
+  </p>
+{% endwith %}

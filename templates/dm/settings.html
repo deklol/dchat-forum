@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="form-shell">
+  <div class="form-shell-head">
+    <p class="eyebrow">Direct Messages</p>
+    <h1>DM Settings</h1>
+  </div>
+  <form method="post" class="form-grid">
+    {% csrf_token %}
+    {{ preference_form.non_field_errors }}
+    <p class="checkbox-field">
+      {{ preference_form.allow_incoming }}
+      {{ preference_form.allow_incoming.label_tag }}
+      {{ preference_form.allow_incoming.errors }}
+    </p>
+    <p class="muted">If disabled, users cannot send you new direct messages from your profile popup or DM thread.</p>
+    <div class="composer-actions">
+      <a href="{% url 'dm:inbox' %}" class="button-like">Back To Inbox</a>
+      <button type="submit">Save DM Settings</button>
+    </div>
+  </form>
+</section>
+{% endblock %}

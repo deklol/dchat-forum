@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="form-shell">
+  <div class="form-shell-head">
+    <p class="eyebrow">Account</p>
+    <h1>Login</h1>
+    <p class="muted">Jump back into your threads, mentions, and notifications.</p>
+  </div>
+  <form method="post" class="form-grid">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Sign In</button>
+  </form>
+</section>
+{% endblock %}

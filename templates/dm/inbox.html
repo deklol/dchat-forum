@@ -1,0 +1,207 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="dm-page">
+  <div class="dm-workspace">
+    <aside class="dm-rail">
+      <header class="dm-rail-head">
+        <div>
+          <p class="eyebrow">Messages And Mentions</p>
+          <h1>Inbox</h1>
+        </div>
+        <div class="dm-rail-actions">
+          {% with inbox_total=unread_dm_count|add:unread_notifications_count %}
+            {% if inbox_total %}<span class="sidebar-chip">{{ inbox_total }} unread</span>{% endif %}
+          {% endwith %}
+          <a href="{% url 'dm:settings' %}" class="sidebar-chip">Settings</a>
+        </div>
+      </header>
+
+      <section class="dm-launcher">
+        <div class="dm-section-head">
+          <h2>Start A DM</h2>
+          <p class="muted">Open a conversation without leaving the inbox.</p>
+        </div>
+        <form method="post" action="{% url 'dm:start' %}" class="dm-launcher-form">
+          {% csrf_token %}
+          <label for="id_dm_start_username">Username</label>
+          <input id="id_dm_start_username" type="text" name="username" maxlength="150" placeholder="@username" autocomplete="off" required>
+          <label for="id_dm_start_body">First message</label>
+          <input id="id_dm_start_body" type="text" name="body" maxlength="1000" placeholder="Write first message..." autocomplete="off" required>
+          <button type="submit">Send</button>
+        </form>
+      </section>
+
+      <section class="dm-conversation-shell">
+        <div class="dm-section-head dm-section-head-tight">
+          <h2>Direct Messages</h2>
+          <span class="sidebar-meta-count">{{ conversations|length }}</span>
+        </div>
+        <div class="dm-conversation-list">
+          {% for conversation in conversations %}
+            <a href="{% url 'dm:inbox' %}?u={{ conversation.other_user.username }}" class="dm-conversation-row{% if conversation.is_selected %} is-active{% endif %}">
+              <span class="dm-conversation-avatar-wrap">
+                {% if conversation.other_user.avatar %}
+                  <img src="{{ conversation.other_user.avatar.url }}" alt="{{ conversation.other_user.username }}" class="dm-conversation-avatar" width="44" height="44">
+                {% else %}
+                  <span class="dm-conversation-avatar dm-conversation-avatar-fallback" aria-hidden="true">{{ conversation.other_user.username|slice:":1"|upper }}</span>
+                {% endif %}
+                <span class="dm-presence{% if conversation.other_user_is_online %} is-online{% endif %}"></span>
+              </span>
+              <span class="dm-conversation-main">
+                <span class="dm-conversation-topline">
+                  <strong>{{ conversation.other_user.username }}</strong>
+                  <span>{{ conversation.last_message.created_at|date:"M j, H:i"|default:"New" }}</span>
+                </span>
+                <span class="dm-conversation-preview">{{ conversation.last_preview }}</span>
+              </span>
+              {% if conversation.unread_count %}
+                <span class="mention-thread-badge">{{ conversation.unread_count }}</span>
+              {% endif %}
+            </a>
+          {% empty %}
+            <p class="empty-copy">No direct conversations yet. Start one above or from a user popup.</p>
+          {% endfor %}
+        </div>
+      </section>
+    </aside>
+
+    <section class="dm-pane">
+      {% if target_user %}
+        <header class="dm-pane-head">
+          <div class="dm-pane-user">
+            <span class="dm-conversation-avatar-wrap">
+              {% if target_user.avatar %}
+                <img src="{{ target_user.avatar.url }}" alt="{{ target_user.username }}" class="dm-conversation-avatar" width="48" height="48">
+              {% else %}
+                <span class="dm-conversation-avatar dm-conversation-avatar-fallback" aria-hidden="true">{{ target_user.username|slice:":1"|upper }}</span>
+              {% endif %}
+              <span class="dm-presence{% if target_user.is_currently_online %} is-online{% endif %}"></span>
+            </span>
+            <div>
+              <p class="eyebrow">Active Conversation</p>
+              <h2>
+                <a href="{% url 'accounts:profile' username=target_user.username %}" data-user-card="{{ target_user.username }}">{{ target_user.username }}</a>
+              </h2>
+              <p class="muted">@{{ target_user.username }}{% if target_user.is_currently_online %} is online{% else %} is offline{% endif %}</p>
+            </div>
+          </div>
+          {% if not target_accepts_dms %}
+            <span class="badge">Incoming DMs Disabled</span>
+          {% endif %}
+        </header>
+
+        <div class="dm-message-feed">
+          {% for message in dm_messages %}
+            <article class="dm-message-row{% if message.sender_id == user.id %} is-own{% else %} is-other{% endif %}">
+              {% if message.sender_id != user.id %}
+                <a href="{% url 'accounts:profile' username=message.sender.username %}" class="dm-message-avatar-wrap" data-user-card="{{ message.sender.username }}">
+                  {% if message.sender.avatar %}
+                    <img src="{{ message.sender.avatar.url }}" alt="{{ message.sender.username }}" class="dm-message-avatar" width="36" height="36">
+                  {% else %}
+                    <span class="dm-message-avatar dm-conversation-avatar-fallback" aria-hidden="true">{{ message.sender.username|slice:":1"|upper }}</span>
+                  {% endif %}
+                </a>
+              {% endif %}
+              <div class="dm-message-stack">
+                <div class="dm-message-meta">
+                  <strong>{% if message.sender_id == user.id %}You{% else %}{{ message.sender.username }}{% endif %}</strong>
+                  <span class="dm-message-time">{{ message.created_at|date:"M j, Y H:i" }}</span>
+                  {% if message.is_reported %}<span class="badge">Reported</span>{% endif %}
+                </div>
+                <div class="dm-message-bubble">
+                  <div class="markdown-body">{{ message.body_plain|linebreaksbr }}</div>
+                </div>
+                {% if message.sender_id != user.id and not message.is_reported %}
+                  <form method="post" action="{% url 'dm:report_message' message_id=message.id %}" class="dm-report-form">
+                    {% csrf_token %}
+                    <input type="text" name="reason" maxlength="200" placeholder="Report reason (optional)">
+                    <button type="submit">Report</button>
+                  </form>
+                {% endif %}
+              </div>
+            </article>
+          {% empty %}
+            <div class="dm-empty-state dm-empty-state-thread">
+              <h3>No messages yet</h3>
+              <p>Send the first message to get this conversation going.</p>
+            </div>
+          {% endfor %}
+        </div>
+
+        <footer class="dm-pane-composer">
+          {% if target_accepts_dms %}
+            <form method="post" action="{% url 'dm:conversation' username=target_user.username %}" class="dm-compose-form">
+              {% csrf_token %}
+              <label for="{{ form.body.id_for_label }}" class="visually-hidden">Direct message body</label>
+              {{ form.body }}
+              <div class="dm-compose-actions">
+                <p class="muted">Encrypted at rest, delivered over HTTPS.</p>
+                <button type="submit">Send DM</button>
+              </div>
+            </form>
+          {% else %}
+            <div class="dm-disabled-state">
+              <p class="muted">@{{ target_user.username }} has disabled incoming DMs.</p>
+            </div>
+          {% endif %}
+        </footer>
+      {% else %}
+        <header class="dm-pane-head dm-pane-head-activity" id="inbox-activity">
+          <div>
+            <p class="eyebrow">Inbox Activity</p>
+            <h2>Mentions, Replies, And System Notes</h2>
+          </div>
+          {% if unread_notifications_count %}<span class="badge">{{ unread_notifications_count }} unread</span>{% endif %}
+        </header>
+
+        <div class="dm-activity-feed">
+          {% for notification in activity_notifications %}
+            <article class="dm-activity-card{% if not notification.is_read %} is-unread{% endif %}">
+              <div class="dm-activity-topline">
+                <div class="dm-activity-identity">
+                  <span class="dm-conversation-avatar-wrap">
+                    {% if notification.actor and notification.actor.avatar %}
+                      <img src="{{ notification.actor.avatar.url }}" alt="{{ notification.actor.username }}" class="dm-conversation-avatar" width="40" height="40">
+                    {% elif notification.actor %}
+                      <span class="dm-conversation-avatar dm-conversation-avatar-fallback" aria-hidden="true">{{ notification.actor.username|slice:":1"|upper }}</span>
+                    {% else %}
+                      <span class="dm-conversation-avatar dm-conversation-avatar-fallback" aria-hidden="true">!</span>
+                    {% endif %}
+                    {% if notification.actor %}<span class="dm-presence{% if notification.actor_is_online %} is-online{% endif %}"></span>{% endif %}
+                  </span>
+                  <div>
+                    <strong>{% if notification.actor %}{{ notification.actor.username }}{% else %}System{% endif %}</strong>
+                    <p class="muted">{{ notification.created_at|date:"M j, Y H:i" }}</p>
+                  </div>
+                </div>
+                {% if not notification.is_read %}<span class="mention-thread-badge">New</span>{% endif %}
+              </div>
+
+              <p class="dm-activity-copy">{{ notification.body|default:"You have a new inbox event." }}</p>
+
+              <div class="dm-activity-actions">
+                {% if notification.destination_url %}
+                  <a href="{{ notification.destination_url }}" class="button-like">Open</a>
+                {% endif %}
+                {% if not notification.is_read %}
+                  <form method="post" action="{% url 'accounts:notification_read' notification_id=notification.id %}" class="inline-form">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{% url 'dm:inbox' %}#inbox-activity">
+                    <button type="submit">Mark Read</button>
+                  </form>
+                {% endif %}
+              </div>
+            </article>
+          {% empty %}
+            <div class="dm-empty-state">
+              <p class="eyebrow">Inbox Activity</p>
+              <h2>Nothing new yet</h2>
+              <p>Select a conversation on the left or wait for mentions, replies, and system messages to land here.</p>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    </section>
+  </div>
+</section>
+{% endblock %}

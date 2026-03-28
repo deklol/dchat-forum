@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="page-shell">
+  <header class="page-head">
+    <p class="eyebrow">Moderation</p>
+    <h1>Reported DMs</h1>
+  </header>
+  <section class="list-shell">
+    {% for message in reported_messages %}
+      <article class="topic-row">
+        <div class="topic-main">
+          <p class="topic-meta">
+            <a href="{% url 'accounts:profile' username=message.sender.username %}" data-user-card="{{ message.sender.username }}">{{ message.sender.username }}</a>
+            <span>to</span>
+            <a href="{% url 'accounts:profile' username=message.recipient.username %}" data-user-card="{{ message.recipient.username }}">{{ message.recipient.username }}</a>
+            <span>{{ message.created_at|date:"M j, Y H:i" }}</span>
+            {% if message.reported_by %}<span>reported by {{ message.reported_by.username }}</span>{% endif %}
+          </p>
+          {% if message.report_reason %}<p class="topic-preview">{{ message.report_reason }}</p>{% endif %}
+          <div class="markdown-body">{{ message.body_plain|linebreaksbr }}</div>
+        </div>
+      </article>
+    {% empty %}
+      <p class="empty-copy">No reported DMs.</p>
+    {% endfor %}
+  </section>
+</section>
+{% endblock %}

@@ -1,0 +1,16 @@
+<div class="user-forum-stats">
+  <div class="user-forum-stat">
+    <span>Posts</span>
+    <strong>{{ stats_user.forum_post_count|default:0 }}</strong>
+  </div>
+  <div class="user-forum-stat">
+    <span>Topics</span>
+    <strong>{{ stats_user.forum_topic_count|default:0 }}</strong>
+  </div>
+  <div class="user-forum-stat">
+    <span>Rep</span>
+    <strong class="user-forum-stat-value{% if stats_user.forum_rep > 0 %} is-positive{% elif stats_user.forum_rep < 0 %} is-negative{% endif %}">
+      {% if stats_user.forum_rep > 0 %}+{% endif %}{{ stats_user.forum_rep|default:0 }}
+    </strong>
+  </div>
+</div>

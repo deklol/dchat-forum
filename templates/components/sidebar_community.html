@@ -1,0 +1,41 @@
+<section class="sidebar-section">
+  <div class="sidebar-heading-row">
+    <h3>Community</h3>
+    <span class="sidebar-meta-count">{{ online_users|length }} online</span>
+  </div>
+
+  <div class="sidebar-fact-list">
+    <div class="sidebar-fact">
+      <span class="sidebar-fact-label">Newest</span>
+      <div class="sidebar-fact-body">
+        {% if newest_user %}
+          <a href="{% url 'accounts:profile' username=newest_user.username %}" class="sidebar-chip" data-user-card="{{ newest_user.username }}">{{ newest_user.username }}</a>
+        {% else %}
+          <span class="muted">none yet</span>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="sidebar-fact">
+      <span class="sidebar-fact-label">Online</span>
+      <div class="sidebar-chip-cloud">
+        {% for u in online_users|slice:":12" %}
+          <a href="{% url 'accounts:profile' username=u.username %}" class="sidebar-chip" data-user-card="{{ u.username }}">{{ u.username }}</a>
+        {% empty %}
+          <span class="muted">none</span>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="sidebar-fact">
+      <span class="sidebar-fact-label">Recent</span>
+      <div class="sidebar-chip-cloud">
+        {% for u in recent_logged_in_users|slice:":12" %}
+          <a href="{% url 'accounts:profile' username=u.username %}" class="sidebar-chip" data-user-card="{{ u.username }}">{{ u.username }}</a>
+        {% empty %}
+          <span class="muted">none</span>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</section>

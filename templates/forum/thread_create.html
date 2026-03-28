@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="form-shell">
+  <div class="form-shell-head">
+    <p class="eyebrow">Compose</p>
+    <h1>Create Thread</h1>
+    <p class="muted">Start a new discussion with Markdown, tags, and embeds.</p>
+  </div>
+  <form method="post" enctype="multipart/form-data" class="form-grid post-composer standalone-composer" data-composer-root>
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+    <p>
+      {{ form.category.label_tag }}
+      {{ form.category }}
+      {{ form.category.errors }}
+    </p>
+    <p>
+      {{ form.title.label_tag }}
+      {{ form.title }}
+      {{ form.title.errors }}
+    </p>
+    <p>
+      {{ form.tags_csv.label_tag }}
+      {{ form.tags_csv }}
+      {{ form.tags_csv.errors }}
+      {% if form.tags_csv.help_text %}<span class="field-help">{{ form.tags_csv.help_text }}</span>{% endif %}
+    </p>
+    {% include "components/markdown_toolbar.html" %}
+    <p>
+      {{ form.body_markdown.label_tag }}
+      {{ form.body_markdown }}
+      {{ form.body_markdown.errors }}
+    </p>
+    <p>
+      {{ form.attachment.label_tag }}
+      {{ form.attachment }}
+      {{ form.attachment.errors }}
+      <span class="field-help">Upload PNG, JPG, JPEG, or GIF up to 8 MB for image-based threads.</span>
+    </p>
+    <div class="mention-menu is-hidden" data-mention-menu role="listbox" aria-label="Mention suggestions"></div>
+    <div class="composer-actions standalone-actions">
+      <p class="muted">Supports Markdown, @mentions, and rich link embeds for supported sites.</p>
+      <button type="submit">Post Thread</button>
+    </div>
+  </form>
+</section>
+{{ mentionable_users|json_script:"mentionable-users-data" }}
+{% endblock %}

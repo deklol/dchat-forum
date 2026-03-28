@@ -1,0 +1,78 @@
+<article class="user-card-popup">
+  <div class="user-card-banner"></div>
+  <div class="user-card-main">
+    <div class="user-card-avatar-wrap">
+      {% if profile_user.avatar %}
+        <img src="{{ profile_user.avatar.url }}" alt="{{ profile_user.username }}" class="user-card-avatar" width="88" height="88">
+      {% else %}
+        <div class="user-card-avatar-fallback">{{ profile_user.username|slice:":1"|upper }}</div>
+      {% endif %}
+    </div>
+    <div class="user-card-identity">
+      <h3>
+        {{ profile_user.username }}
+        <span class="user-card-status{% if profile_user_is_online %} is-online{% endif %}"></span>
+      </h3>
+      <p class="muted">@{{ profile_user.username }}</p>
+      {% include "components/user_role_badge.html" with role_user=profile_user %}
+    </div>
+    <div class="user-card-section user-card-actions">
+      <a href="{% url 'accounts:profile' username=profile_user.username %}">View Profile</a>
+      {% if user.is_authenticated and user.username != profile_user.username %}
+        {% if profile_user_accepts_dms %}
+          <form method="post" action="{% url 'dm:quick_send' username=profile_user.username %}" class="user-card-dm-form">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{{ popup_next_url }}">
+            <input type="text" name="body" maxlength="1000" required autocomplete="off" placeholder="Message @{{ profile_user.username }}">
+            <button type="submit">Send</button>
+          </form>
+        {% else %}
+          <p class="muted">This user has incoming DMs disabled.</p>
+        {% endif %}
+      {% endif %}
+    </div>
+    <div class="user-card-section">
+      <h4>Forum Stats</h4>
+      {% include "components/user_forum_stats.html" with stats_user=profile_user %}
+    </div>
+    <div class="user-card-section">
+      <h4>About Me</h4>
+      <p>{{ profile_user.bio|default:"No bio yet." }}</p>
+    </div>
+    <div class="user-card-section">
+      <h4>Links</h4>
+      <div class="user-card-links">
+        {% if profile_user.website_url %}<a href="{{ profile_user.website_url }}" target="_blank" rel="noopener">Website</a>{% endif %}
+        {% if profile_user.social_x %}<a href="{{ profile_user.social_x }}" target="_blank" rel="noopener">X</a>{% endif %}
+        {% if profile_user.social_discord %}<span>Discord: {{ profile_user.social_discord }}</span>{% endif %}
+        {% if not profile_user.website_url and not profile_user.social_x and not profile_user.social_discord %}<span>No links yet.</span>{% endif %}
+      </div>
+    </div>
+    <div class="user-card-section">
+      <h4>Recent Topics</h4>
+      <div class="user-card-activity-list">
+        {% for recent_thread in recent_threads %}
+          <a href="{{ recent_thread.get_absolute_url }}" class="user-card-activity-item">
+            <strong>{{ recent_thread.title }}</strong>
+            <span>#{{ recent_thread.category.name }}</span>
+          </a>
+        {% empty %}
+          <p class="muted">No topics yet.</p>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="user-card-section">
+      <h4>Recent Replies</h4>
+      <div class="user-card-activity-list">
+        {% for recent_post in recent_posts %}
+          <a href="{{ recent_post.permalink_url }}" class="user-card-activity-item">
+            <strong>{{ recent_post.thread.title }}</strong>
+            <span>{% if recent_post.body_markdown %}{{ recent_post.body_markdown|truncatechars:70 }}{% else %}Image reply{% endif %}</span>
+          </a>
+        {% empty %}
+          <p class="muted">No replies yet.</p>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</article>

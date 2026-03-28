@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="page-shell">
+  <header class="page-head">
+    <p class="eyebrow">Inbox</p>
+    <h1>Notifications</h1>
+  </header>
+  <section class="list-shell">
+    {% for notification in notifications %}
+      <article class="topic-row notification-row {% if not notification.is_read %}topic-row-unread{% endif %}">
+        <div class="topic-main">
+          <p class="topic-meta">{{ notification.created_at|date:"M j, Y H:i" }}</p>
+          <p class="topic-preview">{{ notification.body|default:"You have a new inbox event." }}</p>
+        </div>
+        <div class="topic-stats notification-actions">
+          {% if notification.thread %}
+            <a href="{{ notification.thread.get_absolute_url }}{% if notification.post %}#post-{{ notification.post.id }}{% endif %}">
+              {% if notification.post %}Open Mention{% else %}Open Thread{% endif %}
+            </a>
+          {% endif %}
+          {% if not notification.is_read %}
+            <form method="post" action="{% url 'accounts:notification_read' notification_id=notification.id %}" class="inline-form">
+              {% csrf_token %}
+              <button type="submit">Mark Read</button>
+            </form>
+          {% endif %}
+        </div>
+      </article>
+    {% empty %}
+      <p class="empty-copy">No notifications yet.</p>
+    {% endfor %}
+  </section>
+</section>
+{% endblock %}

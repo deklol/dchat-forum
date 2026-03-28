@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="page-shell">
+  <header class="page-head">
+    <p class="eyebrow">Direct Message</p>
+    <h1>DM with {{ target_user.username }}</h1>
+    <p class="muted"><a href="{% url 'dm:settings' %}">DM Settings</a></p>
+  </header>
+  <section class="list-shell dm-thread">
+    {% for message in dm_messages %}
+      <article class="topic-row dm-row {% if message.recipient_id == user.id and not message.is_read %}topic-row-unread{% endif %}">
+        <div class="topic-main">
+          <p class="topic-meta">
+            <a href="{% url 'accounts:profile' username=message.sender.username %}" data-user-card="{{ message.sender.username }}">{{ message.sender.username }}</a>
+            <span>{{ message.created_at|date:"M j, Y H:i" }}</span>
+            {% if message.is_reported %}<span class="badge">Reported</span>{% endif %}
+          </p>
+          <div class="markdown-body">{{ message.body_plain|linebreaksbr }}</div>
+        </div>
+        <div class="topic-stats dm-actions">
+          {% if message.sender_id != user.id and not message.is_reported %}
+            <form method="post" action="{% url 'dm:report_message' message_id=message.id %}" class="stack-form">
+              {% csrf_token %}
+              <input type="text" name="reason" maxlength="200" placeholder="Report reason (optional)">
+              <button type="submit">Report</button>
+            </form>
+          {% endif %}
+        </div>
+      </article>
+    {% empty %}
+      <p class="empty-copy">No messages yet.</p>
+    {% endfor %}
+  </section>
+  <section class="composer-shell dm-composer">
+    {% if target_accepts_dms %}
+      <form method="post" class="form-grid">
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+        <p>
+          {{ form.body.label_tag }}
+          {{ form.body }}
+          {{ form.body.errors }}
+        </p>
+        <div class="composer-actions">
+          <p class="muted">DM bodies are stored encrypted and delivered over HTTPS.</p>
+          <button type="submit">Send DM</button>
+        </div>
+      </form>
+    {% else %}
+      <p class="muted">@{{ target_user.username }} has disabled incoming DMs.</p>
+    {% endif %}
+  </section>
+</section>
+{% endblock %}

@@ -1,0 +1,11 @@
+{% load forum_format %}
+<h2 class="message-feed-title">Thread Replies</h2>
+{% if post_tree %}
+  <div class="thread-post-list">
+    {% for node in post_tree %}
+      {% include "forum/partials/post_node.html" with node=node thread=thread %}
+    {% endfor %}
+  </div>
+{% else %}
+  <p class="empty-copy thread-empty-copy">No replies yet. Be the first to post one.</p>
+{% endif %}

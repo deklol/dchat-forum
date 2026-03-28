@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="form-shell">
+  <div class="form-shell-head">
+    <p class="eyebrow">Privacy</p>
+    <h1>Delete Account</h1>
+    <p class="muted">This action anonymizes your account. Type DELETE to confirm.</p>
+  </div>
+  <form method="post" class="form-grid">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Confirm Account Deletion</button>
+  </form>
+</section>
+{% endblock %}

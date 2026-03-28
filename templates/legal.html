@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% load forum_format %}
+{% block content %}
+<section class="workspace-grid reading-workspace">
+  <aside class="sidebar-pane stream-sidebar">
+    <section class="sidebar-section">
+      <div class="sidebar-heading-row">
+        <div class="sidebar-heading-main">
+          <a href="{% url 'forum:home' %}" class="mini-action mini-action-back" data-go-back aria-label="Go back">&larr;</a>
+          <h2>Legal</h2>
+        </div>
+        <span class="sidebar-version-pill">{{ document.version }}</span>
+      </div>
+      <p class="sidebar-note">Core legal pages for this dChat deployment.</p>
+      <div class="sidebar-link-grid legal-link-grid">
+        <a href="{% url 'legal_doc' doc_type='terms' %}"{% if document.doc_type == "terms" %} class="is-active"{% endif %}>Terms</a>
+        <a href="{% url 'legal_doc' doc_type='privacy' %}"{% if document.doc_type == "privacy" %} class="is-active"{% endif %}>Privacy</a>
+        <a href="{% url 'legal_doc' doc_type='cookies' %}"{% if document.doc_type == "cookies" %} class="is-active"{% endif %}>Cookies</a>
+      </div>
+    </section>
+
+    <section class="sidebar-section">
+      <h3>Related</h3>
+      <div class="sidebar-link-grid legal-link-grid">
+        <a href="{% url 'changelog' %}">Changelog</a>
+        <a href="{% url 'docs_page' slug='readme' %}">Readme</a>
+        <a href="{% url 'docs_page' slug='install' %}">Install</a>
+        <a href="{% url 'docs_page' slug='faq' %}">FAQ</a>
+      </div>
+    </section>
+  </aside>
+
+  <section class="main-pane reading-main-pane">
+    <header class="page-head reading-page-head">
+      <p class="eyebrow">Legal</p>
+      <h1>{{ document.title }}</h1>
+      <div class="reading-meta-row">
+        <span>Version {{ document.version }}</span>
+        <span>Updated {{ document.published_at|date:"M j, Y H:i" }}</span>
+      </div>
+    </header>
+    <article class="reading-shell markdown-body policy-reading">{{ rendered_body_markdown|render_markdown_plain }}</article>
+  </section>
+
+  <aside class="sidebar-pane info-sidebar">
+    <section class="sidebar-section">
+      <h3>Operator</h3>
+      <dl class="meta-list">
+        <div><dt>Site</dt><dd>{% if branding %}{{ branding.site_name }}{% else %}dChat{% endif %}</dd></div>
+        <div><dt>Document</dt><dd>{{ document.get_doc_type_display }}</dd></div>
+        <div><dt>Contact</dt><dd>{% if legal_contact_email %}<a href="mailto:{{ legal_contact_email }}">{{ legal_contact_email }}</a>{% else %}Operator-managed{% endif %}</dd></div>
+      </dl>
+    </section>
+
+    <section class="sidebar-section">
+      <h3>Usage</h3>
+      <p class="sidebar-note">These pages should be reviewed and updated by each operator before public launch, especially if they enable analytics, email, custom integrations, or additional moderation workflows.</p>
+    </section>
+  </aside>
+</section>
+{% endblock %}

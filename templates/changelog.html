@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% load forum_format %}
+{% block content %}
+<section class="workspace-grid reading-workspace">
+  <aside class="sidebar-pane stream-sidebar">
+    <section class="sidebar-section">
+      <div class="sidebar-heading-row">
+        <div class="sidebar-heading-main">
+          <a href="{% url 'forum:home' %}" class="mini-action mini-action-back" data-go-back aria-label="Go back">&larr;</a>
+          <h2>Changelog</h2>
+        </div>
+        <span class="sidebar-version-pill">{% if entries %}v{{ entries.0.version }}{% else %}History{% endif %}</span>
+      </div>
+      <p class="sidebar-note">Published release notes for this dChat deployment.</p>
+      <div class="sidebar-link-grid legal-link-grid">
+        <a href="{% url 'docs_page' slug='readme' %}">Readme</a>
+        <a href="{% url 'docs_page' slug='install' %}">Install</a>
+        <a href="{% url 'docs_page' slug='faq' %}">FAQ</a>
+      </div>
+    </section>
+
+    <section class="sidebar-section">
+      <h3>Legal</h3>
+      <div class="sidebar-link-grid legal-link-grid">
+        <a href="{% url 'legal_doc' doc_type='terms' %}">Terms</a>
+        <a href="{% url 'legal_doc' doc_type='privacy' %}">Privacy</a>
+        <a href="{% url 'legal_doc' doc_type='cookies' %}">Cookies</a>
+      </div>
+    </section>
+  </aside>
+
+  <section class="main-pane reading-main-pane">
+    <header class="page-head reading-page-head">
+      <p class="eyebrow">Release Notes</p>
+      <h1>Changelog</h1>
+      <div class="reading-meta-row">
+        <span>Entries {{ entries|length }}</span>
+        {% if entries %}<span>Latest v{{ entries.0.version }}</span>{% endif %}
+      </div>
+    </header>
+    {% for entry in entries %}
+      <article class="reading-shell changelog-entry">
+        <h2>v{{ entry.version }} - {{ entry.title }}</h2>
+        <div class="reading-meta-row">
+          <span>Released {{ entry.released_at|date:"M j, Y H:i" }}</span>
+        </div>
+        <div class="markdown-body">{{ entry.body_markdown|render_markdown_plain }}</div>
+      </article>
+    {% empty %}
+      <article class="reading-shell">
+        <p class="empty-copy">No entries yet.</p>
+      </article>
+    {% endfor %}
+  </section>
+
+  <aside class="sidebar-pane info-sidebar">
+    <section class="sidebar-section">
+      <h3>Release Flow</h3>
+      <p class="sidebar-note">Each published changelog entry increments the visible app version by 0.1 and updates the live footer version badge.</p>
+    </section>
+
+    <section class="sidebar-section">
+      <h3>Navigation</h3>
+      <div class="sidebar-link-grid legal-link-grid">
+        <a href="{% url 'forum:home' %}">Topics</a>
+        <a href="{% url 'docs_page' slug='readme' %}">Readme</a>
+        <a href="{% url 'docs_page' slug='install' %}">Install</a>
+        <a href="{% url 'docs_page' slug='faq' %}">FAQ</a>
+      </div>
+    </section>
+  </aside>
+</section>
+{% endblock %}

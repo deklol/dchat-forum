@@ -1,0 +1,76 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% if branding %}{{ branding.site_name }}{% else %}dChat{% endif %}</title>
+  {% if canonical_url %}<link rel="canonical" href="{{ canonical_url }}">{% endif %}
+  <link rel="stylesheet" href="{% static 'css/theme.css' %}?v={{ app_version|default:'1.0' }}">
+  {% if branding and branding.theme_preset == "dekcx" %}
+    <link rel="stylesheet" href="{% static 'css/theme-dekcx.css' %}?v={{ app_version|default:'1.0' }}">
+  {% endif %}
+  <script defer src="{% static 'js/realtime-listener.js' %}?v={{ app_version|default:'1.0' }}"></script>
+</head>
+<body
+  class="{% if branding %}theme-{{ branding.theme_preset }}{% else %}theme-default{% endif %}"
+  style="
+    --accent:{% if branding %}{{ branding.accent_hex }}{% else %}#f39c12{% endif %};
+    --bg:{% if branding %}{{ branding.bg_hex }}{% else %}#0f1217{% endif %};
+    --surface:{% if branding %}{{ branding.surface_hex }}{% else %}#1a1f29{% endif %};
+    --text:{% if branding %}{{ branding.text_hex }}{% else %}#e5e7eb{% endif %};
+    --muted:{% if branding %}{{ branding.muted_text_hex }}{% else %}#9ca3af{% endif %};
+    --link:{% if branding %}{{ branding.link_hex }}{% else %}#7cc4ff{% endif %};
+    --radius:{% if branding %}{{ branding.border_radius_px }}{% else %}10{% endif %}px;
+  "
+>
+  <a href="#main-content" class="skip-link">Skip to content</a>
+  <div class="app-shell">
+    <aside class="guild-rail">
+      <a href="{% url 'forum:home' %}" class="guild-pill guild-pill-home" aria-label="Forum home" title="Home">
+        {% if branding %}{{ branding.site_name|slice:":1"|upper }}{% else %}D{% endif %}
+      </a>
+      {% if user.is_authenticated and perms.forum.add_thread %}
+        <a href="{% url 'forum:thread_create' %}" class="guild-pill guild-pill-action" aria-label="Create thread" title="Create thread">+</a>
+      {% endif %}
+      {% if user.is_staff %}
+        <a href="/admin/" class="guild-pill guild-pill-admin" aria-label="Admin panel" title="Admin">A</a>
+      {% endif %}
+    </aside>
+
+    <div class="workspace-shell">
+      {% include "components/header.html" %}
+      <main class="app-main" id="main-content">
+        {% if messages %}
+          <section class="flash-stack">
+            {% for message in messages %}
+              <div class="flash">{{ message }}</div>
+            {% endfor %}
+          </section>
+        {% endif %}
+        <div class="page-content">
+          {% block content %}{% endblock %}
+        </div>
+        {% block page_footer %}
+          {% include "components/footer.html" %}
+        {% endblock %}
+      </main>
+    </div>
+  </div>
+  <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+
+  {% if not request.COOKIES.cookie_consent %}
+    <div class="cookie-banner">
+      <p>
+        This site uses essential cookies for login, security, and preferences. Operators may also enable optional analytics or third-party embeds. See
+        <a href="{% url 'legal_doc' doc_type='cookies' %}">cookie policy</a>.
+      </p>
+      <form method="post" action="{% url 'accept_cookie_consent' %}">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{ request.path }}">
+        <button type="submit">Accept</button>
+      </form>
+    </div>
+  {% endif %}
+</body>
+</html>

@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="profile-shell">
+  <div class="profile-banner"></div>
+  <div class="profile-card">
+    <div class="profile-header">
+      {% if profile_user.avatar %}
+        <img src="{{ profile_user.avatar.url }}" alt="{{ profile_user.username }}" class="profile-avatar" width="108" height="108">
+      {% else %}
+        <div class="profile-avatar profile-avatar-fallback" aria-hidden="true">{{ profile_user.username|slice:":1"|upper }}</div>
+      {% endif %}
+      <div>
+        <p class="eyebrow">Profile</p>
+        <h1>{{ profile_user.username }}</h1>
+        <p class="muted">@{{ profile_user.username }}</p>
+      </div>
+    </div>
+
+    <div class="profile-columns">
+      <section class="profile-panel">
+        <h2>Forum Stats</h2>
+        {% include "components/user_forum_stats.html" with stats_user=profile_user %}
+      </section>
+
+      <section class="profile-panel">
+        <h2>About</h2>
+        <p>{{ profile_user.bio|default:"No bio yet." }}</p>
+      </section>
+
+      <section class="profile-panel">
+        <h2>Links</h2>
+        <div class="profile-links">
+          {% if profile_user.website_url %}<a href="{{ profile_user.website_url }}" target="_blank" rel="noopener">Website</a>{% endif %}
+          {% if profile_user.social_x %}<a href="{{ profile_user.social_x }}" target="_blank" rel="noopener">X</a>{% endif %}
+          {% if profile_user.social_discord %}<span>Discord: {{ profile_user.social_discord }}</span>{% endif %}
+          {% if not profile_user.website_url and not profile_user.social_x and not profile_user.social_discord %}<span>No links yet.</span>{% endif %}
+        </div>
+      </section>
+    </div>
+
+    <div class="profile-columns">
+      <section class="profile-panel">
+        <h2>Recent Topics</h2>
+        <div class="user-card-activity-list">
+          {% for recent_thread in recent_threads %}
+            <a href="{{ recent_thread.get_absolute_url }}" class="user-card-activity-item">
+              <strong>{{ recent_thread.title }}</strong>
+              <span>#{{ recent_thread.category.name }}</span>
+            </a>
+          {% empty %}
+            <p class="muted">No topics yet.</p>
+          {% endfor %}
+        </div>
+      </section>
+
+      <section class="profile-panel">
+        <h2>Recent Replies</h2>
+        <div class="user-card-activity-list">
+          {% for recent_post in recent_posts %}
+            <a href="{{ recent_post.permalink_url }}" class="user-card-activity-item">
+              <strong>{{ recent_post.thread.title }}</strong>
+              <span>{% if recent_post.body_markdown %}{{ recent_post.body_markdown|truncatechars:90 }}{% else %}Image reply{% endif %}</span>
+            </a>
+          {% empty %}
+            <p class="muted">No replies yet.</p>
+          {% endfor %}
+        </div>
+      </section>
+    </div>
+
+    {% if user.id == profile_user.id %}
+      <div class="profile-actions">
+        <a href="{% url 'accounts:profile_edit' %}">Edit Profile</a>
+        <a href="{% url 'accounts:privacy_export' %}">Export My Data</a>
+        <a href="{% url 'accounts:privacy_delete' %}">Delete Account</a>
+      </div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="form-shell">
+  <div class="form-shell-head">
+    <p class="eyebrow">External Link</p>
+    <h1>Leaving dChat</h1>
+    <p>You are about to visit an external website.</p>
+    <p><strong>{{ target_host }}</strong></p>
+    <p class="muted">{{ target_url }}</p>
+  </div>
+  <form method="post" class="form-grid">
+    {% csrf_token %}
+    <button type="submit">Continue To External Site</button>
+  </form>
+  <p><a href="{% url 'forum:home' %}">Cancel and return</a></p>
+</section>
+{% endblock %}

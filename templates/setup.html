@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="form-shell">
+  <div class="form-shell-head">
+    <p class="eyebrow">Setup</p>
+    <h1>First-Time Setup</h1>
+    <p class="muted">This creates the first account as admin and initializes branding, legal docs, and permissions.</p>
+    <p class="muted">That first account becomes user <strong>id 1</strong>. Its email is used as the public legal contact on the Terms, Privacy, and Cookies pages unless the operator changes it later.</p>
+  </div>
+  <form method="post" class="form-grid">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Initialize Site</button>
+  </form>
+</section>
+{% endblock %}

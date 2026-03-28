@@ -1,0 +1,54 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: /app/scripts/start-web.sh
+    env_file:
+      - .env
+    volumes:
+      - staticfiles:/app/staticfiles
+      - media:/app/media
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    profiles: ["full"]
+    image: redis:7-alpine
+    command: redis-server --save 60 1 --loglevel warning
+    volumes:
+      - redis_data:/data
+
+  caddy:
+    profiles: ["full"]
+    image: caddy:2-alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./infra/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - staticfiles:/app/staticfiles:ro
+      - media:/app/media:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - web
+
+volumes:
+  postgres_data:
+  redis_data:
+  staticfiles:
+  media:
+  caddy_data:
+  caddy_config:

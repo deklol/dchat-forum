@@ -1,0 +1,21 @@
+<footer class="site-footer" id="footer-presence-root">
+  <div class="site-footer-main">
+    <div class="footer-topline">
+      <div class="footer-brandline">
+        <strong>dChat</strong>
+        <span class="footer-version-pill">v{{ app_version }}</span>
+        <span class="footer-localtime" id="footer-localtime">Local time --:--</span>
+      </div>
+      <nav class="footer-linkline" aria-label="Footer">
+        <a href="{% url 'legal_doc' doc_type='terms' %}">Terms</a>
+        <a href="{% url 'legal_doc' doc_type='privacy' %}">Privacy</a>
+        <a href="{% url 'legal_doc' doc_type='cookies' %}">Cookies</a>
+        <a href="{% url 'changelog' %}">Changelog</a>
+        <a href="{% url 'docs_page' slug='faq' %}">FAQ</a>
+        {% for link in footer_links %}
+          <a href="/out/?u={{ link.url|urlencode }}" class="footer-link-extra">{{ link.label }}</a>
+        {% endfor %}
+      </nav>
+    </div>
+  </div>
+</footer>

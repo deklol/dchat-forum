@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "dchat"
+version = "0.1.0"
+description = "Discord/forum hybrid with public read and member interaction"
+requires-python = ">=3.12"
+dependencies = [
+  "Django>=5.1,<5.3",
+  "psycopg[binary]>=3.2",
+  "redis>=5.2",
+  "gunicorn>=23.0",
+  "whitenoise>=6.8",
+  "Pillow>=11.0",
+  "markdown>=3.7",
+  "bleach>=6.2",
+  "cryptography>=42.0",
+]
+
+[tool.setuptools]
+include-package-data = true

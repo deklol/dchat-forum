@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="page-shell">
+  <header class="page-head">
+    <p class="eyebrow">Staff</p>
+    <h1>Moderation Queue</h1>
+    <p class="muted"><a href="{% url 'dm:reported_queue' %}">Reported DMs</a></p>
+  </header>
+
+  <section class="list-shell">
+    <h2>Reports</h2>
+    {% for report in reports %}
+      <article class="topic-row moderation-row">
+        <div class="topic-main">
+          <div class="topic-line">
+            <h3>#{{ report.id }} {{ report.target_type }}:{{ report.target_id }}</h3>
+            <span class="badge">{{ report.status }}</span>
+          </div>
+          <p class="topic-meta">By {{ report.reporter.username }} on {{ report.created_at|date:"M j, Y H:i" }}</p>
+          <p class="topic-preview">{{ report.reason }}</p>
+          {% if report.details %}<p class="topic-preview">{{ report.details }}</p>{% endif %}
+        </div>
+        <div class="topic-stats moderation-actions">
+          {% if report.status == "open" or report.status == "reviewing" %}
+            <form method="post" action="{% url 'forum:moderate_report' report_id=report.id %}" class="inline-form">
+              {% csrf_token %}
+              <button name="action" value="resolve" type="submit">Resolve</button>
+            </form>
+            <form method="post" action="{% url 'forum:moderate_report' report_id=report.id %}" class="inline-form">
+              {% csrf_token %}
+              <button name="action" value="dismiss" type="submit">Dismiss</button>
+            </form>
+          {% endif %}
+        </div>
+      </article>
+    {% empty %}
+      <p class="empty-copy">No reports.</p>
+    {% endfor %}
+  </section>
+
+  <section class="list-shell">
+    <h2>Moderation Log</h2>
+    {% for log in logs %}
+      <article class="log-row">
+        <span>{{ log.created_at|date:"M j, Y H:i" }}</span>
+        <strong>{{ log.actor.username }}</strong>
+        <span>{{ log.action }}</span>
+        <span>{{ log.target_type }}:{{ log.target_id }}</span>
+      </article>
+    {% empty %}
+      <p class="empty-copy">No logs.</p>
+    {% endfor %}
+  </section>
+</section>
+{% endblock %}

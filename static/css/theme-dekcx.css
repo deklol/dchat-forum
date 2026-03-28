@@ -1,0 +1,391 @@
+body.theme-dekcx {
+  --dek-deep: color-mix(in srgb, var(--bg) 92%, #03050b);
+  --dek-panel: color-mix(in srgb, var(--surface) 84%, #0c1422);
+  --dek-panel-strong: color-mix(in srgb, var(--surface) 72%, #16223a);
+  --dek-panel-soft: color-mix(in srgb, var(--surface) 90%, #0a101a);
+  --dek-frame: color-mix(in srgb, var(--link) 26%, rgba(255, 255, 255, 0.08));
+  --dek-frame-strong: color-mix(in srgb, var(--link) 38%, rgba(255, 255, 255, 0.12));
+  --dek-accent-soft: color-mix(in srgb, var(--accent) 16%, rgba(255, 153, 0, 0.2));
+  --dek-accent-border: color-mix(in srgb, var(--accent) 44%, #6f3d00);
+  --dek-accent-text: color-mix(in srgb, var(--accent) 84%, #ffd79d);
+  --dek-shadow: 0 0 0 1px rgba(255, 255, 255, 0.015), 6px 6px 0 rgba(0, 0, 0, 0.24);
+  background:
+    radial-gradient(circle at 14% 0%, color-mix(in srgb, var(--accent) 10%, transparent), transparent 28%),
+    linear-gradient(rgba(96, 136, 186, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(96, 136, 186, 0.08) 1px, transparent 1px),
+    linear-gradient(180deg, color-mix(in srgb, var(--bg) 96%, #03050a), color-mix(in srgb, var(--surface) 92%, #060b13));
+  background-size: auto, 22px 22px, 22px 22px, auto;
+  background-position: 0 0, 0 0, 0 0, 0 0;
+}
+
+body.theme-dekcx .guild-rail {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--bg) 94%, #02040a), color-mix(in srgb, var(--bg) 88%, #060b14));
+  border-right: 1px solid var(--dek-frame);
+}
+
+body.theme-dekcx .guild-pill {
+  border: 1px solid var(--dek-frame);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--surface) 86%, #111a2d), color-mix(in srgb, var(--surface) 94%, #0b1220));
+  color: color-mix(in srgb, var(--text) 96%, white);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+body.theme-dekcx .guild-pill:hover,
+body.theme-dekcx .guild-pill-home {
+  border-color: var(--dek-accent-border);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 88%, #ffbf61), color-mix(in srgb, var(--accent) 74%, #b85f00));
+  color: #241200;
+}
+
+body.theme-dekcx .guild-pill-action {
+  border-color: color-mix(in srgb, var(--link) 34%, rgba(255, 255, 255, 0.12));
+  background: linear-gradient(180deg, color-mix(in srgb, var(--link) 46%, #325d8c), color-mix(in srgb, var(--surface) 76%, #102036));
+  color: white;
+}
+
+body.theme-dekcx .guild-pill-admin {
+  border-color: color-mix(in srgb, var(--accent) 26%, rgba(255, 255, 255, 0.12));
+  background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 24%, #5b2a00), color-mix(in srgb, var(--surface) 84%, #16161d));
+  color: var(--dek-accent-text);
+}
+
+body.theme-dekcx .site-header,
+body.theme-dekcx .sidebar-pane,
+body.theme-dekcx .main-pane,
+body.theme-dekcx .forum-post,
+body.theme-dekcx .composer-shell,
+body.theme-dekcx .form-shell,
+body.theme-dekcx .page-shell,
+body.theme-dekcx .profile-card,
+body.theme-dekcx .reading-shell,
+body.theme-dekcx .list-shell,
+body.theme-dekcx .dm-rail,
+body.theme-dekcx .dm-pane {
+  border-color: var(--dek-frame);
+  background: linear-gradient(180deg, var(--dek-panel), var(--dek-panel-soft));
+  box-shadow: var(--dek-shadow);
+}
+
+body.theme-dekcx .site-footer {
+  border-top: 1px solid var(--dek-frame);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--surface) 82%, #101827), color-mix(in srgb, var(--surface) 92%, #0a101a));
+}
+
+body.theme-dekcx .footer-block,
+body.theme-dekcx .footer-version-pill,
+body.theme-dekcx .footer-linkline a {
+  border-color: color-mix(in srgb, var(--link) 18%, rgba(255, 255, 255, 0.06));
+  background: linear-gradient(180deg, color-mix(in srgb, var(--surface) 84%, #121b2c), color-mix(in srgb, var(--surface) 92%, #0c1320));
+}
+
+body.theme-dekcx .footer-linkline a:hover {
+  background: color-mix(in srgb, var(--surface) 82%, #141c2c);
+  border-color: var(--dek-accent-border);
+}
+
+body.theme-dekcx .footer-brandline strong,
+body.theme-dekcx .footer-block h4 {
+  color: color-mix(in srgb, var(--text) 95%, white);
+}
+
+body.theme-dekcx .app-main {
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--bg) 92%, #04070d), color-mix(in srgb, var(--surface) 88%, #09111b));
+}
+
+body.theme-dekcx .site-header {
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--bg) 88%, #07101d), color-mix(in srgb, var(--bg) 94%, #03060b));
+  border-bottom: 1px solid var(--dek-frame);
+  box-shadow: inset 0 -2px 0 color-mix(in srgb, var(--accent) 32%, transparent);
+}
+
+body.theme-dekcx .logo-link,
+body.theme-dekcx .sidebar-section h2,
+body.theme-dekcx .sidebar-section h3,
+body.theme-dekcx .toolbar h1,
+body.theme-dekcx .topic-line h2 a,
+body.theme-dekcx .participant-name,
+body.theme-dekcx .forum-post-meta,
+body.theme-dekcx .post-permalink,
+body.theme-dekcx .user-link {
+  color: color-mix(in srgb, var(--text) 97%, white);
+}
+
+body.theme-dekcx .header-search-form input,
+body.theme-dekcx input,
+body.theme-dekcx textarea,
+body.theme-dekcx select,
+body.theme-dekcx .composer-toolbar,
+body.theme-dekcx .reply-target,
+body.theme-dekcx .mention-menu,
+body.theme-dekcx .user-card-dm-form input {
+  border: 1px solid var(--dek-frame);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--surface) 88%, #0d1627), color-mix(in srgb, var(--surface) 94%, #08101c));
+  color: color-mix(in srgb, var(--text) 96%, white);
+}
+
+body.theme-dekcx .header-search-form input::placeholder,
+body.theme-dekcx input::placeholder,
+body.theme-dekcx textarea::placeholder {
+  color: color-mix(in srgb, var(--muted) 88%, #97a9bf);
+}
+
+body.theme-dekcx .top-nav > a,
+body.theme-dekcx .top-nav button,
+body.theme-dekcx .mini-action,
+body.theme-dekcx .composer-tool,
+body.theme-dekcx .vote-btn,
+body.theme-dekcx .forum-post-actions a,
+body.theme-dekcx .forum-post-actions button,
+body.theme-dekcx .inline-form button,
+body.theme-dekcx .stack-form button,
+body.theme-dekcx .topic-stats a,
+body.theme-dekcx .attachment-preview figcaption a,
+body.theme-dekcx .button-like,
+body.theme-dekcx .user-card-actions a,
+body.theme-dekcx .user-card-actions button {
+  border: 1px solid var(--dek-frame-strong);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--surface) 78%, #162136), color-mix(in srgb, var(--surface) 90%, #0d1525));
+  color: color-mix(in srgb, var(--text) 95%, white);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+body.theme-dekcx .top-nav > a:hover,
+body.theme-dekcx .top-nav button:hover,
+body.theme-dekcx .mini-action:hover,
+body.theme-dekcx .composer-tool:hover,
+body.theme-dekcx .vote-btn:hover,
+body.theme-dekcx .forum-post-actions a:hover,
+body.theme-dekcx .forum-post-actions button:hover,
+body.theme-dekcx .inline-form button:hover,
+body.theme-dekcx .stack-form button:hover,
+body.theme-dekcx .topic-stats a:hover,
+body.theme-dekcx .attachment-preview figcaption a:hover,
+body.theme-dekcx .button-like:hover,
+body.theme-dekcx .user-card-actions a:hover,
+body.theme-dekcx .user-card-actions button:hover {
+  border-color: var(--dek-accent-border);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 12%, #1a2031), color-mix(in srgb, var(--surface) 84%, #111a2a));
+  color: color-mix(in srgb, var(--text) 98%, white);
+  text-decoration: none;
+}
+
+body.theme-dekcx .inline-form .danger-btn,
+body.theme-dekcx .stack-form .danger-btn {
+  border-color: #b8615b;
+  background: linear-gradient(180deg, #6f2b2d, #512022);
+  color: #fff3f1;
+}
+
+body.theme-dekcx .inline-form .danger-btn:hover,
+body.theme-dekcx .stack-form .danger-btn:hover {
+  border-color: #d37a71;
+  background: linear-gradient(180deg, #813235, #622629);
+  color: #fff;
+}
+
+body.theme-dekcx .forum-post-actions button:disabled,
+body.theme-dekcx .inline-form button:disabled,
+body.theme-dekcx .stack-form button:disabled {
+  opacity: 0.55;
+  box-shadow: none;
+}
+
+body.theme-dekcx .sidebar-cta,
+body.theme-dekcx .composer-actions button,
+body.theme-dekcx .standalone-actions button,
+body.theme-dekcx .user-card-dm-form button,
+body.theme-dekcx .dm-launcher-form button,
+body.theme-dekcx .dm-pane-composer button,
+body.theme-dekcx .form-shell button[type="submit"],
+body.theme-dekcx .cookie-banner button,
+body.theme-dekcx .outbound-link-card button[type="submit"] {
+  border: 1px solid var(--dek-accent-border);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 90%, #ffc66c), color-mix(in srgb, var(--accent) 76%, #bd6900));
+  color: #241200;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.34);
+}
+
+body.theme-dekcx .sidebar-cta:hover,
+body.theme-dekcx .composer-actions button:hover,
+body.theme-dekcx .standalone-actions button:hover,
+body.theme-dekcx .user-card-dm-form button:hover,
+body.theme-dekcx .dm-launcher-form button:hover,
+body.theme-dekcx .dm-pane-composer button:hover,
+body.theme-dekcx .form-shell button[type="submit"]:hover,
+body.theme-dekcx .cookie-banner button:hover,
+body.theme-dekcx .outbound-link-card button[type="submit"]:hover {
+  filter: brightness(1.03);
+}
+
+body.theme-dekcx .sidebar-section,
+body.theme-dekcx .toolbar,
+body.theme-dekcx .topic-pane-head,
+body.theme-dekcx .message-feed-title,
+body.theme-dekcx .forum-post-author,
+body.theme-dekcx .dm-rail-head,
+body.theme-dekcx .dm-pane-head {
+  border-color: var(--dek-frame);
+  background: linear-gradient(180deg, var(--dek-panel-strong), color-mix(in srgb, var(--surface) 88%, #0e1626));
+}
+
+body.theme-dekcx .forum-post-author {
+  border-right: 1px solid var(--dek-frame-strong);
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--surface) 72%, #172542), color-mix(in srgb, var(--surface) 84%, #0d1524));
+}
+
+body.theme-dekcx .toolbar {
+  background: color-mix(in srgb, var(--surface) 86%, #111827);
+}
+
+body.theme-dekcx .user-forum-stat,
+body.theme-dekcx .participant-item,
+body.theme-dekcx .dm-conversation-row,
+body.theme-dekcx .dm-activity-card,
+body.theme-dekcx .dm-message-row,
+body.theme-dekcx .reply-context,
+body.theme-dekcx .topic-tag,
+body.theme-dekcx .role-badge-member,
+body.theme-dekcx .sidebar-version-pill,
+body.theme-dekcx .sidebar-chip,
+body.theme-dekcx .sidebar-link-grid a {
+  border-color: color-mix(in srgb, var(--link) 18%, rgba(255, 255, 255, 0.06));
+  background: linear-gradient(180deg, color-mix(in srgb, var(--surface) 84%, #121b2c), color-mix(in srgb, var(--surface) 92%, #0c1320));
+}
+
+body.theme-dekcx .user-forum-stat,
+body.theme-dekcx .participant-item,
+body.theme-dekcx .dm-conversation-row,
+body.theme-dekcx .dm-activity-card,
+body.theme-dekcx .dm-message-row,
+body.theme-dekcx .topic-tag,
+body.theme-dekcx .role-badge-member,
+body.theme-dekcx .sidebar-version-pill,
+body.theme-dekcx .sidebar-chip,
+body.theme-dekcx .sidebar-link-grid a,
+body.theme-dekcx .user-card-links a,
+body.theme-dekcx .user-card-links span {
+  border: 1px solid color-mix(in srgb, var(--link) 18%, rgba(255, 255, 255, 0.06));
+}
+
+body.theme-dekcx .sidebar-chip,
+body.theme-dekcx .sidebar-link-grid a {
+  background: color-mix(in srgb, var(--surface) 86%, #111827);
+}
+
+body.theme-dekcx .topic-row,
+body.theme-dekcx .topic-pane-head,
+body.theme-dekcx .sidebar-section,
+body.theme-dekcx .forum-post,
+body.theme-dekcx .post-children > .forum-post-reply + .forum-post-reply {
+  border-color: var(--dek-frame);
+}
+
+body.theme-dekcx .stream-link:hover,
+body.theme-dekcx .stream-link.is-active,
+body.theme-dekcx .stream-subthread-link:hover,
+body.theme-dekcx .stream-subthread-link.is-active,
+body.theme-dekcx .topic-row:hover,
+body.theme-dekcx .participant-item:hover,
+body.theme-dekcx .mention-item:hover,
+body.theme-dekcx .mention-item.is-active,
+body.theme-dekcx .sidebar-chip:hover,
+body.theme-dekcx .sidebar-link-grid a:hover {
+  background: color-mix(in srgb, var(--surface) 82%, #141c2c);
+  border-color: var(--dek-accent-border);
+}
+
+body.theme-dekcx .stream-link.is-active,
+body.theme-dekcx .stream-subthread-link.is-active {
+  box-shadow: inset 3px 0 0 color-mix(in srgb, var(--accent) 78%, transparent);
+}
+
+body.theme-dekcx .topic-row-unread,
+body.theme-dekcx .topic-row-mentioned,
+body.theme-dekcx .dm-activity-card.is-unread {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 8%, #182234), color-mix(in srgb, var(--surface) 86%, #101726));
+  box-shadow: inset 3px 0 0 color-mix(in srgb, var(--accent) 72%, transparent);
+}
+
+body.theme-dekcx .badge,
+body.theme-dekcx .mention-thread-badge,
+body.theme-dekcx .mention-mini-badge {
+  border-color: var(--dek-accent-border);
+  background: color-mix(in srgb, var(--accent) 18%, rgba(26, 18, 2, 0.88));
+  color: color-mix(in srgb, var(--accent) 88%, #fff0d7);
+}
+
+body.theme-dekcx .badge {
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+body.theme-dekcx .role-badge-admin {
+  border: 1px solid color-mix(in srgb, var(--accent) 48%, rgba(255, 255, 255, 0.1));
+  background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 20%, #332004), color-mix(in srgb, var(--surface) 88%, #160f05));
+  color: color-mix(in srgb, var(--accent) 86%, #fff0cb);
+}
+
+body.theme-dekcx .role-badge-moderator {
+  border: 1px solid color-mix(in srgb, var(--link) 42%, rgba(255, 255, 255, 0.1));
+  background: linear-gradient(180deg, color-mix(in srgb, var(--link) 18%, #102441), color-mix(in srgb, var(--surface) 90%, #0b1423));
+  color: color-mix(in srgb, var(--link) 82%, white);
+}
+
+body.theme-dekcx .role-badge-member {
+  color: color-mix(in srgb, var(--text) 86%, white);
+}
+
+body.theme-dekcx .mention,
+body.theme-dekcx .topic-marker,
+body.theme-dekcx .sidebar-version-pill,
+body.theme-dekcx .stream-subthread-fresh,
+body.theme-dekcx .user-forum-stat-value.is-positive {
+  color: var(--dek-accent-text);
+}
+
+body.theme-dekcx .participant-status.is-online,
+body.theme-dekcx .user-card-status.is-online,
+body.theme-dekcx .dm-presence.is-online {
+  background: color-mix(in srgb, var(--link) 56%, #7fffaf);
+}
+
+body.theme-dekcx .attachment-preview img {
+  border-color: var(--dek-frame-strong);
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.2);
+}
+
+body.theme-dekcx .user-card-links a,
+body.theme-dekcx .user-card-links span {
+  border-color: var(--dek-frame);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--surface) 84%, #121b2c), color-mix(in srgb, var(--surface) 92%, #0c1320));
+}
+
+body.theme-dekcx .user-card-activity-item {
+  border-color: var(--dek-frame);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--surface) 84%, #121b2c), color-mix(in srgb, var(--surface) 92%, #0c1320));
+}
+
+body.theme-dekcx .user-card-activity-item:hover {
+  border-color: var(--dek-accent-border);
+  background: color-mix(in srgb, var(--accent) 10%, #151f30);
+}
+
+body.theme-dekcx .user-card-links a:hover {
+  border-color: var(--dek-accent-border);
+  background: color-mix(in srgb, var(--accent) 10%, #151f30);
+}
+
+body.theme-dekcx .reply-context,
+body.theme-dekcx .markdown-body blockquote {
+  box-shadow: none;
+}
+
+body.theme-dekcx .markdown-body blockquote {
+  border-left-color: color-mix(in srgb, var(--accent) 58%, #875100);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--surface) 84%, #111827), color-mix(in srgb, var(--surface) 92%, #0c1320));
+  color: color-mix(in srgb, var(--text) 86%, white);
+  padding: 0.6rem 0.8rem;
+}

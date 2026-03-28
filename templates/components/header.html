@@ -1,0 +1,33 @@
+<header class="site-header">
+  <div class="header-left">
+    <a href="{% url 'forum:home' %}" class="logo-link">
+      {% if branding and branding.logo_url %}
+        <img src="{{ branding.logo_url }}" alt="Logo" class="logo" width="30" height="30">
+      {% endif %}
+      <span>{% if branding %}{{ branding.site_name }}{% else %}dChat{% endif %}</span>
+    </a>
+  </div>
+  <div class="header-center">
+    <form method="get" action="{% url 'forum:home' %}" class="header-search-form">
+      <input type="search" name="q" placeholder="Search topics..." aria-label="Search topics">
+    </form>
+  </div>
+  <nav class="top-nav">
+    <a href="{% url 'forum:home' %}">Topics</a>
+    {% if user.is_authenticated %}
+      {% if perms.forum.add_thread %}<a href="{% url 'forum:thread_create' %}">Create</a>{% endif %}
+      {% with inbox_total=unread_dm_count|add:unread_notifications_count %}
+        <a href="{% url 'dm:inbox' %}">Inbox{% if inbox_total %} ({{ inbox_total }}){% endif %}</a>
+      {% endwith %}
+      <a href="{% url 'accounts:profile' username=user.username %}">Profile</a>
+      {% if perms.forum.change_report %}<a href="{% url 'forum:moderation_queue' %}">Moderation</a>{% endif %}
+      <form method="post" action="{% url 'accounts:logout' %}">
+        {% csrf_token %}
+        <button type="submit">Logout</button>
+      </form>
+    {% else %}
+      <a href="{% url 'accounts:login' %}">Login</a>
+      <a href="{% url 'accounts:register' %}">Sign up</a>
+    {% endif %}
+  </nav>
+</header>
