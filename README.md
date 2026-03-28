@@ -1,4 +1,4 @@
-# dChat
+# dChat Forum Software
 
 Open source Discord/forum hybrid built for public-readable communities and member-only interaction.
 
